@@ -1,0 +1,34 @@
+# UEM3DED configuration
+# Format: KEY = VALUE
+# Lines starting with # are ignored.
+
+# Working directory for ASI/SERVAL example scripts
+WORK_DIR = /home/asi/Software/ASI/20211004 ASI Server 2.3.0 (TPX3)/examples/tpx3/
+
+# TEM / instamatic bridge
+TEM_HOST = 172.17.41.1
+TEM_PORT = 9090
+
+# SERVAL server
+SERVAL_URL = http://localhost:8080
+
+# Newport delay stage
+NEWPORT_PORT = /dev/ttyUSB0
+
+# ASI socket
+ASI_ADDRESS = 127.0.0.1
+ASI_PORT1 = 6351
+ASI_PORT2 = 6352
+
+# Detector configuration files
+BPC_FILE = /home/asi/Desktop/Factory settings 23-11-2023/factory-test-config/high-power/eq-accos-dd-04.bpc
+DACS_FILE = /home/asi/Desktop/Factory settings 23-11-2023/factory-test-config/high-power/eq-accos-dd-05_200keV-e.dacs
+
+# Default 3DED format parameters
+WAVELENGTH = 0.025079
+CCD_PIXEL_SIZE = 0.007249
+ROTATION_AXIS = 117.4
+BEAM_TILT_STEP = 0
+BEAM_TILT_RANGE = 0.0
+STRETCHING_MP = 0.0
+STRETCHING_AZIMUTH = 0.0
