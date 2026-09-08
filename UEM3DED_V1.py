@@ -33,6 +33,8 @@ DEFAULT_CONFIG = {
     "ASI_ADDRESS": "127.0.0.1",
     "ASI_PORT1": "6351",
     "ASI_PORT2": "6352",
+    "ENABLE_ASI_SOCKET": "false",
+    "LOAD_CAMERA_CONFIG": "false",
     "BPC_FILE": "/home/asi/Desktop/Factory settings 23-11-2023/factory-test-config/high-power/eq-accos-dd-04.bpc",
     "DACS_FILE": "/home/asi/Desktop/Factory settings 23-11-2023/factory-test-config/high-power/eq-accos-dd-05_200keV-e.dacs",
     "WAVELENGTH": "0.025079",
@@ -81,6 +83,8 @@ NEWPORT_PORT = CONFIG["NEWPORT_PORT"]
 ASI_ADDRESS = CONFIG["ASI_ADDRESS"]
 ASI_PORT1 = int(CONFIG["ASI_PORT1"])
 ASI_PORT2 = int(CONFIG["ASI_PORT2"])
+ENABLE_ASI_SOCKET = CONFIG["ENABLE_ASI_SOCKET"].lower() in ("1", "true", "yes", "on")
+LOAD_CAMERA_CONFIG = CONFIG["LOAD_CAMERA_CONFIG"].lower() in ("1", "true", "yes", "on")
 BPC_FILE = CONFIG["BPC_FILE"]
 DACS_FILE = CONFIG["DACS_FILE"]
 DELAY_STAGE_SETTLE_TIME = 1.0
@@ -123,14 +127,20 @@ address = ASI_ADDRESS
 port1 = ASI_PORT1
 rcv_buffer_size = 4096
 port2 = ASI_PORT2
-sock1 = socket.socket()
+sock1 = None
 
-try:
-    sock1.connect((address, port1))
-except ConnectionRefusedError:
-    print("\nCONNECTION REFUSED: THE SOFTWARE IS NOT RUNNING OR THE ADDRESS OR PORT ARE WRONG/BLOCKED\n")
-except BrokenPipeError:
-    print("\nBroken Pipe error")
+if ENABLE_ASI_SOCKET:
+    sock1 = socket.socket()
+    try:
+        sock1.connect((address, port1))
+    except ConnectionRefusedError:
+        print(
+            "\nASI SOCKET CONNECTION REFUSED: %s:%s is not listening. "
+            "This socket is optional unless you explicitly use ASI socket streaming.\n"
+            % (address, port1)
+        )
+    except BrokenPipeError:
+        print("\nASI socket broken pipe error\n")
 
 
 from matplotlib.backends.qt_compat import QtCore, QtWidgets, QtGui, is_pyqt5
@@ -186,16 +196,6 @@ def init_cam(serverurl, bpc_file, dacs_file):
 
     response = get_request(url=serverurl + '/config/load?format=dacs&file=' + dacs_file)
     print('Response of loading DACs file: ' + response.text)
-
-
-def init_acquisition(serverurl, detector_config, ntriggers=1, trigger_period=0.5, exposure_time=0.10):
-    detector_config["nTriggers"] = ntriggers
-    detector_config["TriggerMode"] = "AUTOTRIGSTART_TIMERSTOP"
-    detector_config["TriggerPeriod"] = trigger_period
-    detector_config["ExposureTime"] = exposure_time
-
-    response = put_request(url=serverurl + '/detector/config', data=json.dumps(detector_config))
-    print('Response of updating Detector Configuration: ' + response.text)
 
 
 def simple_acquisition(serverurl):
@@ -859,28 +859,26 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         bpcFile = BPC_FILE
         dacsFile = DACS_FILE
 
-        init_cam(serverurl, bpcFile, dacsFile)
+        if LOAD_CAMERA_CONFIG:
+            init_cam(serverurl, bpcFile, dacsFile)
+        else:
+            print("Skipping camera config load; using current SERVAL/Cheetah detector settings.")
 
         response = get_request(url=serverurl + '/detector/config')
         data = response.text
         print('Response of getting the Detector Configuration from SERVAL: ' + data)
 
-        detectorConfig = json.loads(data)
-        detectorConfig["BiasVoltage"] = 100
-        detectorConfig["BiasEnabled"] = True
-
-        detectorconfig = get_detectorconfig(serverurl)
-
-        init_acquisition(
-            serverurl,
-            detectorConfig,
-            detectorconfig['nTriggers'],
-            detectorconfig['TriggerPeriod'],
-            detectorconfig['ExposureTime']
+        detectorconfig = json.loads(data)
+        print(
+            "Using existing detector configuration from SERVAL: "
+            "nTriggers=%s, TriggerMode=%s, TriggerPeriod=%s, ExposureTime=%s"
+            % (
+                detectorconfig.get('nTriggers'),
+                detectorconfig.get('TriggerMode'),
+                detectorconfig.get('TriggerPeriod'),
+                detectorconfig.get('ExposureTime'),
+            )
         )
-
-        response = get_request(url=serverurl + '/detector/config')
-        print('Response of getting the updated Detector Configuration from SERVAL : ' + response.text)
 
         os.chdir(WORK_DIR)
         print('current dirrectory: ' + WORK_DIR)

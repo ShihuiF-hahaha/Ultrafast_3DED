@@ -19,8 +19,14 @@ NEWPORT_PORT = /dev/ttyUSB0
 ASI_ADDRESS = 127.0.0.1
 ASI_PORT1 = 6351
 ASI_PORT2 = 6352
+ENABLE_ASI_SOCKET = false
 
 # Detector configuration files
+LOAD_CAMERA_CONFIG = false
+FRAMES_PER_POINT = 1
+DETECTOR_TRIGGER_MODE = AUTOTRIGSTART_TIMERSTOP
+DETECTOR_EXPOSURE_TIME = 0.5
+DETECTOR_TRIGGER_PERIOD = 0.502
 BPC_FILE = /home/asi/Desktop/Factory settings 23-11-2023/factory-test-config/high-power/eq-accos-dd-04.bpc
 DACS_FILE = /home/asi/Desktop/Factory settings 23-11-2023/factory-test-config/high-power/eq-accos-dd-05_200keV-e.dacs
 

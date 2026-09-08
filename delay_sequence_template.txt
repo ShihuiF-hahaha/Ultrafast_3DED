@@ -1,0 +1,15 @@
+# Custom time-delay sequence for UEM3DED_V3.py
+# Unit: ps
+#
+# Format:
+# - One delay value per line is recommended.
+# - Empty lines are ignored.
+# - Text after "#" is treated as a comment.
+# - Values are collected in the exact order written below.
+#
+# Example default sequence:
+300
+305
+310
+315
+320
