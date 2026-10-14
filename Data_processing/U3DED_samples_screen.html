@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>U-3DED Sample Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --paper:#EEF0F4;
+  --surface:#FFFFFF;
+  --surface-2:#F6F7FA;
+  --ink:#12151C;
+  --ink-2:#4E5567;
+  --ink-3:#79809220;
+  --line:#D7DBE4;
+  --line-soft:#E5E8EF;
+  --accent:#22307A;
+
+  --c-phase:#A81241;
+  --c-disorder:#5B4BC4;
+  --c-lattice:#0D7181;
+
+  --risk-low:#1D7A4C;
+  --risk-med:#9A6606;
+  --risk-high:#A8322A;
+
+  --hue:var(--accent);
+
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+  --w:1120px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D0F15;
+    --surface:#161A23;
+    --surface-2:#1C212C;
+    --ink:#E7EAF1;
+    --ink-2:#A0A8BA;
+    --ink-3:#8891a520;
+    --line:#2A303D;
+    --line-soft:#232936;
+    --accent:#8FA2E8;
+    --c-phase:#F0688C;
+    --c-disorder:#A093F0;
+    --c-lattice:#4FBFD0;
+    --risk-low:#5BC98D;
+    --risk-med:#DFA83C;
+    --risk-high:#F0796D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D0F15;
+  --surface:#161A23;
+  --surface-2:#1C212C;
+  --ink:#E7EAF1;
+  --ink-2:#A0A8BA;
+  --ink-3:#8891a520;
+  --line:#2A303D;
+  --line-soft:#232936;
+  --accent:#8FA2E8;
+  --c-phase:#F0688C;
+  --c-disorder:#A093F0;
+  --c-lattice:#4FBFD0;
+  --risk-low:#5BC98D;
+  --risk-med:#DFA83C;
+  --risk-high:#F0796D;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--w);margin:0 auto;padding:0 28px}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+/* ---------- masthead ---------- */
+.masthead{padding:72px 0 44px;border-bottom:1px solid var(--line)}
+.eyebrow{
+  font-family:var(--f-mono);font-size:13px;
+  color:var(--ink-2);display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+}
+.eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+.masthead h1{font-size:clamp(38px,6vw,58px);letter-spacing:-.02em;margin:22px 0 0;max-width:17ch}
+.masthead .standfirst{
+  margin-top:22px;max-width:62ch;font-size:19px;color:var(--ink-2);
+}
+.masthead .standfirst strong{color:var(--ink);font-weight:500}
+
+/* ---------- generic section ---------- */
+.filter{padding:48px 0 8px}
+.section-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.section-head h2{font-size:28px;letter-spacing:-.01em}
+.section-head .note{font-family:var(--f-mono);font-size:13px;color:var(--ink-2)}
+.lede{max-width:66ch;color:var(--ink-2);margin-top:12px;font-size:16.5px}
+
+.keynote{
+  margin-top:28px;background:var(--surface);border:1px solid var(--line-soft);
+  border-left:3px solid var(--accent);border-radius:0 3px 3px 0;padding:26px 28px;
+  display:flex;flex-direction:column;gap:12px;
+}
+.keynote h3{font-size:21px}
+.keynote p{font-size:16px;color:var(--ink-2);max-width:70ch}
+.keynote p strong{color:var(--ink);font-weight:500}
+
+.gates{
+  list-style:none;padding:0;margin:28px 0 0;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
+  background:var(--line-soft);border:1px solid var(--line-soft);border-radius:2px;overflow:hidden;
+}
+.gates li{background:var(--surface);padding:22px;display:flex;flex-direction:column;gap:9px}
+.gates b{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);font-weight:500}
+.gates h4{font-size:18px;font-weight:600}
+.gates p{font-size:14.5px;color:var(--ink-2);line-height:1.55}
+
+/* ---------- category ---------- */
+.cat{padding:64px 0 8px;border-top:1px solid var(--line);margin-top:56px}
+.cat-head{display:flex;gap:18px;align-items:flex-start}
+.cat-mark{width:4px;align-self:stretch;background:var(--hue);flex:none;border-radius:2px;min-height:56px}
+.cat-head h2{font-size:clamp(28px,3.6vw,40px);letter-spacing:-.015em}
+.cat-head .kicker{font-family:var(--f-mono);font-size:13.5px;color:var(--hue);margin-bottom:9px}
+.cat-lede{max-width:68ch;color:var(--ink-2);margin-top:14px;font-size:17px}
+
+.tierlabel{
+  display:flex;align-items:center;gap:14px;margin:46px 0 20px;
+  font-family:var(--f-display);font-size:19px;font-weight:600;color:var(--ink);
+}
+.tierlabel .tdesc{font-family:var(--f-body);font-size:14px;font-weight:400;color:var(--ink-2)}
+.tierlabel::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- candidate card ---------- */
+.cards{display:grid;gap:18px}
+.cand{
+  background:var(--surface);border:1px solid var(--line-soft);border-top:2px solid var(--hue);
+  border-radius:3px;padding:26px 26px 22px;display:flex;flex-direction:column;gap:18px;
+}
+.cand-top{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between}
+.cand-id h3{font-size:24px;letter-spacing:-.01em}
+.cand-id .formula{font-family:var(--f-mono);font-size:13.5px;color:var(--ink-2);margin-top:6px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.chip{
+  font-family:var(--f-body);font-size:12.5px;
+  padding:3px 10px;border:1px solid var(--line);border-radius:2px;color:var(--ink-2);white-space:nowrap;
+}
+.chip.sig{border-color:var(--hue);color:var(--hue)}
+.chip.temp{border-color:var(--accent);color:var(--accent)}
+.chip.risk-low{border-color:var(--risk-low);color:var(--risk-low)}
+.chip.risk-med{border-color:var(--risk-med);color:var(--risk-med)}
+.chip.risk-high{border-color:var(--risk-high);color:var(--risk-high)}
+
+.facts{margin:0;display:grid;grid-template-columns:136px 1fr;gap:12px 24px;font-size:15.5px}
+.facts dt{font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--ink-2);padding-top:3px}
+.facts dd{margin:0;color:var(--ink);line-height:1.55}
+.facts dd.dim{color:var(--ink-2)}
+.facts .key{color:var(--hue);font-weight:500}
+code{font-family:var(--f-mono);font-size:.9em;background:var(--surface-2);padding:1px 5px;border-radius:2px}
+
+/* ---------- timescale ruler ---------- */
+.ruler{position:relative;margin-top:2px;border-top:1px solid var(--line-soft);padding-top:18px}
+.ruler-track{position:relative;height:8px;background:var(--surface-2);border-radius:1px;overflow:hidden}
+.ruler-irf{
+  position:absolute;top:0;bottom:0;left:0;
+  background:repeating-linear-gradient(135deg,var(--ink-3) 0 3px,transparent 3px 6px);
+  border-right:1px solid var(--line);
+}
+.ruler-bar{position:absolute;top:0;bottom:0;background:var(--hue);opacity:.85;border-radius:1px}
+.ruler-ticks{position:relative;height:16px;margin-top:5px}
+.ruler-ticks span{
+  position:absolute;transform:translateX(-50%);font-family:var(--f-mono);font-size:11.5px;
+  color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.ruler-cap{position:absolute;right:0;top:0;font-family:var(--f-body);font-size:12.5px;color:var(--ink-2)}
+
+/* ---------- tables ---------- */
+.t2wrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:3px;background:var(--surface);margin-top:24px}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:14.5px}
+thead th{
+  text-align:left;font-family:var(--f-body);font-size:13.5px;
+  color:var(--ink);font-weight:600;padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+tbody td{padding:15px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top;color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:none}
+tbody td:first-child{color:var(--ink);font-weight:600;font-size:15.5px;white-space:nowrap}
+tbody td .sub{display:block;font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);font-weight:400;margin-top:4px}
+td.temp{font-family:var(--f-mono);font-size:13.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.swap{color:var(--ink)}
+
+/* ---------- shortlist ---------- */
+.shortlist{margin-top:64px;padding:40px 0 8px;border-top:1px solid var(--line)}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;margin-top:26px}
+.pick{background:var(--surface);border:1px solid var(--line-soft);border-radius:3px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.pick .role{font-family:var(--f-mono);font-size:13px;color:var(--hue)}
+.pick h4{font-size:21px}
+.pick p{font-size:14.5px;color:var(--ink-2);line-height:1.55}
+
+/* ---------- ops ---------- */
+.ops{margin-top:56px;padding:40px 0 0;border-top:1px solid var(--line)}
+.oplist{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:14px}
+.oplist li{
+  background:var(--surface);border-left:2px solid var(--accent);padding:17px 20px;border-radius:0 3px 3px 0;
+  font-size:15.5px;color:var(--ink-2);line-height:1.6;
+}
+.oplist li strong{color:var(--ink);font-weight:600;font-size:16px}
+
+footer{margin-top:64px;padding:28px 0 60px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-2)}
+footer p+p{margin-top:8px}
+
+@media (max-width:640px){
+  .wrap{padding:0 18px}
+  .masthead{padding:48px 0 32px}
+  .facts{grid-template-columns:1fr;gap:4px 0}
+  .facts dt{padding-top:10px}
+  .cand{padding:22px 18px 18px}
+  .keynote{padding:20px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span class="dot"></span><span>Ultrafast 3D Electron Diffraction</span>
+    <span>·</span><span>295 K, no cryostat</span>
+    <span>·</span><span>2 ps IRF</span>
+    <span>·</span><span>sub-ns delay window</span>
+  </div>
+  <h1>Room-temperature candidates for U-3DED</h1>
+  <p class="standfirst">
+    The list re-cut for an experiment that runs at ambient. Roughly a third of the original candidates
+    depended on a phase that only exists below 250 K and are gone; several that were buried in the frontier
+    tier move up, because <strong>room temperature is where they were always meant to work.</strong>
+    One change matters more than any single sample choice — see below.
+  </p>
+</header>
+
+<!-- ================= RT KEYNOTE ================= -->
+<section class="filter">
+  <div class="section-head">
+    <h2>What room temperature changes</h2>
+    <span class="note">Read this before the candidate list</span>
+  </div>
+  <p class="lede">
+    Losing the cryostat costs you three things: low-temperature ordered phases, roughly a factor of 3–10 in
+    dose tolerance on soft materials, and the thermal ballast that was quietly absorbing your average laser
+    power. The first is unavoidable. The second and third are manageable. And one thing gets easier.
+  </p>
+
+  <div class="keynote">
+    <h3>Your temperature knob now only goes up — so use it</h3>
+    <p>
+      A heating holder reaching ~500 K costs a fraction of a cryo holder and reopens a surprising amount of
+      this list: <strong>VO₂ at 340 K, TaS₂'s NC→IC transition at ~350 K, Ta₂NiSe₅ at 328 K, BaTiO₃ at 393 K,
+      CsPbBr₃'s cubic phase at 403 K, superionic AgI at 420 K.</strong>
+    </p>
+    <p>
+      More important than the extra systems is what poising does to your signal. Sitting 5–15 K below a
+      transition drops the photoinduced threshold fluence sharply, so you get a much larger structural
+      response at a fluence the sample survives. On every borderline candidate here, that is the difference
+      between a 1% effect fighting your drift and a 20% effect you can refine. It is the single
+      highest-leverage change you can make to a room-temperature plan.
+    </p>
+    <p>
+      The catch, which is now your dominant systematic: poised near a transition, steady-state laser heating
+      can push you <em>across</em> it without warning. Check the negative-delay lattice parameter against a
+      genuine pump-off measurement at every working point.
+    </p>
+  </div>
+</section>
+
+<!-- ================= CUT LIST ================= -->
+<section class="filter" style="padding-top:56px">
+  <div class="section-head">
+    <h2>Cut from the list, and what replaces them</h2>
+    <span class="note">Ordered phase does not exist at 295 K</span>
+  </div>
+  <div class="t2wrap">
+    <table>
+      <thead>
+        <tr><th>Was on the list</th><th>Ordered phase</th><th>Room-temperature replacement</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fe₃O₄<span class="sub">trimeron / Verwey order</span></td>
+          <td class="temp">T<sub>V</sub> = 125 K</td>
+          <td class="swap">Bi₀.₅Ca₀.₅MnO₃ or Bi₁₋ₓSrₓMnO₃ — charge and orbital order that survives above 295 K,
+          and carries the same ensemble of weak superlattice reflections</td>
+        </tr>
+        <tr>
+          <td>1T-TaS₂ hidden state<span class="sub">commensurate phase</span></td>
+          <td class="temp">C phase &lt; 180 K</td>
+          <td class="swap">The same crystal in its nearly-commensurate phase, which <em>is</em> the room-temperature
+          phase — different physics, same 3D argument</td>
+        </tr>
+        <tr>
+          <td>TTF-CA<span class="sub">neutral–ionic transition</span></td>
+          <td class="temp">T<sub>NI</sub> = 81 K</td>
+          <td class="swap">λ-Ti₃O₅ — a genuinely room-temperature bistable photo-switch with a much larger
+          volume change</td>
+        </tr>
+        <tr>
+          <td>1T-TiSe₂, K₀.₃MoO₃<span class="sub">CDW systems</span></td>
+          <td class="temp">200 K · 180 K</td>
+          <td class="swap">TbTe₃ (T<sub>CDW</sub> ≈ 336 K) or LaTe₃ (≈ 670 K) — rare-earth tritellurides carry
+          their CDW straight through room temperature</td>
+        </tr>
+        <tr>
+          <td>Pr₀.₅Ca₀.₅MnO₃<span class="sub">La₀.₅Sr₁.₅MnO₄</span></td>
+          <td class="temp">T<sub>CO</sub> ≈ 230 K</td>
+          <td class="swap">Bi-based manganites, as above — the Bi lone pair pushes charge ordering above 295 K</td>
+        </tr>
+        <tr>
+          <td>SrTiO₃, KTaO₃<span class="sub">quantum paraelectric soft mode</span></td>
+          <td class="temp">&lt; 100 K</td>
+          <td class="swap">BaTiO₃ poised near 393 K with a heating holder — the soft mode drops toward zero
+          frequency there and becomes resolvable at a 2 ps response</td>
+        </tr>
+        <tr>
+          <td>AgI, Cu₂Se<span class="sub">superionic α phases</span></td>
+          <td class="temp">above 420 K · 400 K</td>
+          <td class="swap">RbAg₄I₅ — superionic at room temperature and the best-conducting solid silver-ion
+          electrolyte known. Or simply heat: this one is above you, not below</td>
+        </tr>
+        <tr>
+          <td>Graphite second sound<span class="sub">phonon hydrodynamics</span></td>
+          <td class="temp">50–100 K</td>
+          <td class="swap">No room-temperature analogue. Hydrodynamic transport needs the cryostat — drop it</td>
+        </tr>
+        <tr>
+          <td>Spin crossover with a static LIESST benchmark</td>
+          <td class="temp">LIESST &lt; 50 K</td>
+          <td class="swap">Fe(II)-triazole nanoparticles, whose hysteresis brackets or sits just above 295 K —
+          you keep the experiment but lose the cryogenic ground-truth structure</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= FILTER ================= -->
+<section class="filter" style="padding-top:56px">
+  <div class="section-head">
+    <h2>The filter</h2>
+    <span class="note">Six gates, the last one new</span>
+  </div>
+  <p class="lede">
+    A 4D dataset is a rotation series multiplied by a delay series — hours of acquisition where tilt and
+    delay are scanned on different clocks. That cost sets the selection rules more than the physics does.
+  </p>
+
+  <ol class="gates">
+    <li>
+      <b>Gate 01</b>
+      <h4>3D has to be load-bearing</h4>
+      <p>Either the answer is a refinable structure, or the signal has an out-of-plane component — satellite
+      <code>L</code>-index, diffuse sheets, rods. A Debye–Waller drop on one ring does not qualify.</p>
+    </li>
+    <li>
+      <b>Gate 02</b>
+      <h4>Reversible for 10⁷–10¹⁰ shots</h4>
+      <p>Fatigue or slow accumulation masquerades as delay dependence. Room temperature helps here — most
+      states relax faster and fewer metastable phases latch — but it removes cryo's dose protection, so
+      budget 3–10× less dose on organics, MOFs and perovskites.</p>
+    </li>
+    <li>
+      <b>Gate 03</b>
+      <h4>Slower than ~3–5 ps</h4>
+      <p>A 2 ps instrument response erases coherent optical phonons. What survives: order-parameter
+      relaxation, carrier–lattice thermalisation, acoustic strain, nucleation, orientational disordering.</p>
+    </li>
+    <li>
+      <b>Gate 04</b>
+      <h4>Uniform excitation through thickness</h4>
+      <p>Pump absorption depth must exceed the crystal thickness or you refine a depth-averaged fiction.
+      Oxides and semiconductors pumped near the gap are fine at 50–150 nm; metals give you a gradient.</p>
+    </li>
+    <li>
+      <b>Gate 05</b>
+      <h4>Thin enough to be quasi-kinematic</h4>
+      <p>Under ~100 nm for light-element crystals, less for heavy ones — or budget for dynamical refinement.
+      This is where your beam-tilt integration earns its keep.</p>
+    </li>
+    <li>
+      <b>Gate 06 — new</b>
+      <h4>The ordered phase must exist at 295 K</h4>
+      <p>Or within reach of a heating holder above it. Anything whose interesting phase sits below room
+      temperature is out, however good the physics — that is what the cut list above is.</p>
+    </li>
+  </ol>
+</section>
+
+<!-- ================= A. PHASE TRANSFORMATION ================= -->
+<section class="cat" style="--hue:var(--c-phase)">
+  <div class="cat-head">
+    <div class="cat-mark"></div>
+    <div>
+      <div class="kicker">Category A</div>
+      <h2>Phase transformation</h2>
+    </div>
+  </div>
+  <p class="cat-lede">
+    The category most disturbed by the room-temperature constraint, since so many photoinduced transitions
+    were characterised in systems chosen for a convenient low <em>T</em><sub>c</sub>. What remains is the set whose
+    transition sits <em>above</em> ambient — which means the heating holder is doing real work in every entry here.
+  </p>
+
+  <div class="tierlabel">Tier 1 <span class="tdesc">build the method on these</span></div>
+  <div class="cards">
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Vanadium dioxide</h3>
+          <div class="formula">VO₂ · M1 → R · T<sub>c</sub> = 340 K</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Superlattice collapse</span>
+          <span class="chip temp">295 K native · poise at 330 K</span>
+          <span class="chip">Nanobeams</span>
+          <span class="chip risk-low">Risk: low</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why it survives</dt>
+        <dd>The transition sits only 45 K above ambient, which is exactly the situation room-temperature work
+        wants: the ordered phase is the room-temperature phase, and the transition is one heating step away.</dd>
+        <dt>Signal</dt>
+        <dd class="dim">V–V dimerisation superlattice reflections extinguish as the monoclinic cell relaxes to
+        rutile. Strong, unambiguous, visible on a single frame.</dd>
+        <dt>Why 3D</dt>
+        <dd class="key">M1, M2 and the proposed monoclinic-metallic phase differ in <em>which subset</em> of
+        superlattice reflections survives, and those subsets are spread through reciprocal space. A decade of
+        single-zone argument exists precisely because one zone axis cannot separate them.</dd>
+        <dt>RT tactic</dt>
+        <dd>Poise at 325–335 K. The photoinduced threshold falls steeply as you approach T<sub>c</sub>, so you
+        get a full transition at a fluence that does not crack the sample. Run a fluence series at two or
+        three base temperatures — the threshold-versus-temperature curve is itself a result.</dd>
+        <dt>Sample</dt>
+        <dd class="dim">Hydrothermal nanobeams, 50–200 nm, dropcast on SiN or graphene. Free-standing beams
+        relieve strain and survive far more cycles than a clamped film.</dd>
+        <dt>Verdict</dt>
+        <dd>Still the safest first real experiment, and now also the best-behaved sample for learning what
+        your heating holder does to drift and eucentricity.</dd>
+      </dl>
+      <div class="ruler" data-lo="0.5" data-hi="500"><div class="ruler-cap">structural window</div></div>
+    </article>
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>λ-Ti₃O₅</h3>
+          <div class="formula">Ti₃O₅ · λ ↔ β photo-switch · room-temperature bistable</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Large volume change</span>
+          <span class="chip temp">295 K native</span>
+          <span class="chip">Nanocrystals</span>
+          <span class="chip risk-med">Risk: medium</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why it moves up</dt>
+        <dd>It was in the frontier tier only because better-studied competitors existed at low temperature.
+        Room-temperature bistability is its defining property, so under this constraint it becomes a
+        first-choice sample rather than an also-ran.</dd>
+        <dt>Signal</dt>
+        <dd class="dim">Photoinduced metal ↔ semiconductor switching with roughly 7% volume change and a
+        monoclinic cell change — one of the largest structural responses available at ambient.</dd>
+        <dt>Why 3D</dt>
+        <dd class="key">The λ and β cells are both monoclinic and closely related; distinguishing them, and
+        quantifying the intermediate, needs the reflection list rather than a few peak positions. With a 7%
+        volume change you also get real leverage on the transient cell from a rotation series.</dd>
+        <dt>Design task</dt>
+        <dd>Bistable means it does not reset itself. Plan the reset before you scan — second-colour erase or a
+        brief thermal excursion between delay series — and verify recovery with a repeated reference delay.</dd>
+        <dt>Verdict</dt>
+        <dd>The biggest structural signal on this page at ambient temperature. The reset scheme is the whole
+        experiment design problem.</dd>
+      </dl>
+      <div class="ruler" data-lo="1" data-hi="500"><div class="ruler-cap">switching &amp; expansion</div></div>
+    </article>
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Fe(II)-triazole spin-crossover nanoparticles</h3>
+          <div class="formula">[Fe(Htrz)₂(trz)](BF₄) · [Fe(NH₂trz)₃]X₂ · hysteresis near 295 K</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Intensity redistribution</span>
+          <span class="chip temp">Poise into the loop</span>
+          <span class="chip">Nanorods / nanocubes</span>
+          <span class="chip risk-high">Risk: high</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why 3D</dt>
+        <dd class="key">Still the flagship argument for the whole method. Low-spin → high-spin elongates the
+        Fe–N bonds by ~0.2 Å — a <em>crystallographic</em> result that needs hundreds of reflections and a real
+        refinement to claim. Nobody has refined a transient molecular structure from a nanocrystal by electron
+        diffraction.</dd>
+        <dt>What RT costs</dt>
+        <dd>The cryogenic LIESST state is gone, and with it the static ground-truth structure you would have
+        refined at leisure and converged on. That was a large part of why this was low-risk before. It is now
+        the highest-risk entry in Tier 1, kept because the payoff is unmatched.</dd>
+        <dt>RT tactic</dt>
+        <dd>Switch families. The triazole coordination polymers are the room-temperature spin-crossover
+        materials — wide thermal hysteresis bracketing or just above ambient, and they are routinely made as
+        50–200 nm rods and cubes, which is exactly the specimen you want. Poise inside the hysteresis loop so
+        a modest photoexcitation converts a large fraction rather than a few percent.</dd>
+        <dt>Timing</dt>
+        <dd class="dim">Intramolecular expansion ~1 ps, at or under your response. The lattice expansion and
+        elastic step run 10–100 ps and sit squarely in your window. Room-temperature relaxation is ns–µs,
+        which is good news: the sample resets itself between shots.</dd>
+        <dt>Verdict</dt>
+        <dd>Attempt it second, not first, and only once VO₂ has told you what your drift and dose budget
+        actually are.</dd>
+      </dl>
+      <div class="ruler" data-lo="1" data-hi="300"><div class="ruler-cap">lattice response</div></div>
+    </article>
+
+  </div>
+
+  <div class="tierlabel">Tier 2 <span class="tdesc">frontier, higher risk</span></div>
+  <div class="t2wrap">
+    <table>
+      <thead>
+        <tr><th>System</th><th>Working point</th><th>Transition and why the rotation series matters</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ta₂NiSe₅</td>
+          <td class="temp">T<sub>c</sub> ≈ 328 K<br>295 K is inside the ordered phase</td>
+          <td>Excitonic-insulator candidate, orthorhombic → monoclinic. Moves up from cryo-only: ambient sits
+          comfortably below T<sub>c</sub>. The symmetry-breaking distortion is small and lives in weak
+          reflections that need a full rotation series to measure. Exfoliated flakes.</td>
+        </tr>
+        <tr>
+          <td>BiFeO₃<span class="sub">PbTiO₃, BaTiO₃</span></td>
+          <td class="temp">1100 K · 763 K · 393 K</td>
+          <td>All ferroelectric at ambient, so room temperature costs nothing here. Photoinduced quench of
+          polar order; the cation displacements sit in weak reflections spread through 3D. BaTiO₃ is the
+          interesting one — its T<sub>c</sub> is within heating-holder reach.</td>
+        </tr>
+        <tr>
+          <td>CsPbBr₃<span class="sub">MAPbI₃</span></td>
+          <td class="temp">Pnma at 295 K<br>tetragonal at 295 K</td>
+          <td>Both are in a tilted phase at ambient, and ambient is the technologically relevant condition —
+          an argument for room temperature rather than against it. The cost is dose: without cryo cooling you
+          lose most of your damage headroom.</td>
+        </tr>
+        <tr>
+          <td>RbMnFe Prussian blue<span class="sub">Rb₀.₈₈Mn[Fe(CN)₆]₀.₉₆</span></td>
+          <td class="temp">hysteresis ≈ 225–300 K<br>composition-dependent</td>
+          <td>Demoted from Tier 1: the clean room-temperature bistability depends on getting the composition
+          right, and the CoFe analogue's persistent photo-charge-transfer is a low-temperature effect. If you
+          land the composition, the nanocube sample prep is the easiest on this page and it goes straight back up.</td>
+        </tr>
+        <tr>
+          <td>Ni–Ti, Ni–Mn–Ga</td>
+          <td class="temp">martensitic at 295 K<br>for the right composition</td>
+          <td>Laser-driven martensitic transformation. Modulated, twinned martensite is inherently a 3D
+          structural problem. Watch the pump penetration depth — these are metals.</td>
+        </tr>
+        <tr>
+          <td>GeTe, Ge₂Sb₂Te₅</td>
+          <td class="temp">295 K native</td>
+          <td>Phase-change memory alloys. Only viable strictly below the amorphisation threshold, where the
+          lattice distortion is reversible. Cross that line once and the sample is gone — treat the fluence
+          ceiling as hard.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= B. DISORDER ================= -->
+<section class="cat" style="--hue:var(--c-disorder)">
+  <div class="cat-head">
+    <div class="cat-mark"></div>
+    <div>
+      <div class="kicker">Category B</div>
+      <h2>Structural disorder</h2>
+    </div>
+  </div>
+  <p class="cat-lede">
+    Still your strongest category, and it survives the room-temperature cut better than expected — because
+    disorder, unlike order, generally increases with temperature. Two of the three Tier 1 entries are
+    unchanged; magnetite is the one real casualty, and the replacement is good rather than merely adequate.
+  </p>
+
+  <div class="tierlabel">Tier 1 <span class="tdesc">build the method on these</span></div>
+  <div class="cards">
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>1T-TaS₂, nearly-commensurate phase</h3>
+          <div class="formula">NC phase spans ≈ 180–350 K · NC → IC at ≈ 350 K</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">CDW satellites, L-resolved</span>
+          <span class="chip temp">295 K native · poise at 340 K</span>
+          <span class="chip">Exfoliated flakes</span>
+          <span class="chip risk-med">Risk: medium</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why it survives</dt>
+        <dd>The nearly-commensurate phase <em>is</em> the room-temperature phase. You lose the hidden state, which
+        needs the commensurate phase below 180 K, but you keep the material and the entire 3D argument.</dd>
+        <dt>Signal</dt>
+        <dd class="dim">At ambient the CDW forms hexagonal domains of √13 clusters separated by
+        discommensurations, with a definite interlayer stacking — hundreds of satellites with a real
+        <code>L</code>-dependence.</dd>
+        <dt>Why 3D</dt>
+        <dd class="key">The cleanest argument for U-3DED that exists, and it is unchanged by temperature. The
+        domain superstructure and its stacking live entirely in the out-of-plane direction. A [001] pattern —
+        which is what nearly every published ultrafast study on this material shows — is structurally blind
+        to it.</dd>
+        <dt>Two experiments</dt>
+        <dd>At ambient, photoinduced domain and discommensuration dynamics within the NC phase. Poised near
+        340 K, the photoinduced NC → IC transition itself, at a threshold low enough to be safely reversible.</dd>
+        <dt>Timing</dt>
+        <dd class="dim">CDW amplitude collapses under 1 ps, below your response. The stacking and domain
+        rearrangement runs 1–100 ps — precisely the part you can see and a 2D experiment cannot interpret.</dd>
+      </dl>
+      <div class="ruler" data-lo="1" data-hi="200"><div class="ruler-cap">domain &amp; stacking rearrangement</div></div>
+    </article>
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Rare-earth tritellurides</h3>
+          <div class="formula">TbTe₃ (T<sub>CDW</sub> ≈ 336 K) · LaTe₃ (≈ 670 K) · DyTe₃</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Unidirectional CDW satellites</span>
+          <span class="chip temp">295 K native</span>
+          <span class="chip">Exfoliated flakes</span>
+          <span class="chip risk-med">Risk: medium</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why it is new here</dt>
+        <dd>The direct replacement for TiSe₂ and blue bronze, both of which order well below ambient. The
+        tritellurides carry their charge-density wave straight through room temperature, and LaTe₃ carries it
+        to 670 K.</dd>
+        <dt>Signal</dt>
+        <dd class="dim">Incommensurate satellites along <em>b</em>* around every Bragg peak, with a well-studied
+        amplitude mode. The heavier members develop a second, perpendicular CDW at low temperature — at
+        ambient you have the clean unidirectional case.</dd>
+        <dt>Why 3D</dt>
+        <dd class="key">Satellite intensity and its <code>L</code>-dependence encode the interlayer CDW correlation —
+        the same argument as TaS₂ but in a simpler, better-characterised system, which makes it the better
+        <em>first</em> CDW experiment even though TaS₂ is the more famous one.</dd>
+        <dt>Handling</dt>
+        <dd class="dim">Air-sensitive: tellurides oxidise. Exfoliate and load under inert atmosphere, or use
+        your transfer holder without cooling it.</dd>
+        <dt>Verdict</dt>
+        <dd>Well-known ultrafast behaviour to benchmark against, and a genuinely new 3D question. Strong
+        room-temperature substitute.</dd>
+      </dl>
+      <div class="ruler" data-lo="1" data-hi="300"><div class="ruler-cap">CDW recovery</div></div>
+    </article>
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Halide perovskite tilt disorder</h3>
+          <div class="formula">CsPbBr₃ (Pnma at 295 K) · MAPbI₃ (tetragonal at 295 K)</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Diffuse sheets &amp; rods</span>
+          <span class="chip temp">295 K is the relevant condition</span>
+          <span class="chip">Colloidal NCs</span>
+          <span class="chip risk-high">Risk: high</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why 3D</dt>
+        <dd class="key">Correlated dynamic tilting produces diffuse sheets and rods with a specific orientation
+        in reciprocal space, and the correlation length is direction-dependent — a single planar cut cannot
+        recover it. Mapping the full 3D diffuse volume against delay answers the field's live question: does
+        photoexcitation locally order the tilt pattern or melt it, and over what distance?</dd>
+        <dt>RT is a feature</dt>
+        <dd>These materials are used at ambient. A cryogenic measurement answers a question about a phase no
+        solar cell ever sees; the room-temperature phase is the one the field actually cares about.</dd>
+        <dt>RT is also the cost</dt>
+        <dd>Cryo cooling was buying most of your damage headroom on this sample. Without it, dose is the
+        binding constraint, not counting statistics. Pilot a dose–damage curve on one crystallite before
+        designing the scan, and plan to merge across many crystals.</dd>
+        <dt>Watch for</dt>
+        <dd class="dim">Ion migration and halide segregation under prolonged pumping look exactly like real
+        dynamics, and both are faster at ambient. Re-measure a negative-delay reference at every tilt.</dd>
+      </dl>
+      <div class="ruler" data-lo="1" data-hi="500"><div class="ruler-cap">tilt correlation dynamics</div></div>
+    </article>
+
+  </div>
+
+  <div class="tierlabel">Tier 2 <span class="tdesc">frontier, higher risk</span></div>
+  <div class="t2wrap">
+    <table>
+      <thead>
+        <tr><th>System</th><th>Working point</th><th>Disorder and why the rotation series matters</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bi₀.₅Ca₀.₅MnO₃<span class="sub">Bi₁₋ₓSrₓMnO₃</span></td>
+          <td class="temp">T<sub>CO</sub> ≈ 330 K</td>
+          <td>The designated replacement for magnetite. Charge and orbital ordering that persists above
+          ambient, carrying the same thing that made Fe₃O₄ attractive: an order parameter encoded in hundreds
+          of weak superlattice reflections that no zone-axis experiment can reach. Your counting detector is
+          the right instrument for reflections this weak.</td>
+        </tr>
+        <tr>
+          <td>RbAg₄I₅</td>
+          <td class="temp">superionic above 209 K</td>
+          <td>Superionic at ambient, unlike AgI and Cu₂Se which need 400 K+. The mobile-cation distribution is
+          a genuinely volumetric probability cloud — its diffuse signature cannot be read off one plane.
+          Transient photo-modulation of ionic disorder is close to unexplored.</td>
+        </tr>
+        <tr>
+          <td>PMN-PT, PZN-PT</td>
+          <td class="temp">PNRs present to ~600 K</td>
+          <td>Polar nanoregions are fully developed at ambient. The classic butterfly-shaped diffuse feature is
+          defined by its 3D geometry, so watching it evolve is a measurement only a rotation series can make.</td>
+        </tr>
+        <tr>
+          <td>C₆₀, adamantane<span class="sub">neopentyl glycol</span></td>
+          <td class="temp">disordered above 260 K · 208 K</td>
+          <td>Ambient is already the rotationally disordered plastic phase, so room temperature is the correct
+          working point rather than a compromise. Rotational disorder scatters into diffuse shells; transient
+          rotational disordering is almost unexplored and 3D by construction. Neopentyl glycol transitions at
+          314 K — within heating-holder reach.</td>
+        </tr>
+        <tr>
+          <td>ScF₃, ZrW₂O₈<span class="sub">ZIF-8, MIL-53</span></td>
+          <td class="temp">295 K native</td>
+          <td>Correlated rigid-unit rotations and framework breathing, all at ambient. Diffuse rods from
+          correlated polyhedral rotation. MOFs are the canonical beneficiary of 3DED and nobody has done them
+          time-resolved — the most distinctly "3DED" entry in this table.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= C. LATTICE DYNAMICS ================= -->
+<section class="cat" style="--hue:var(--c-lattice)">
+  <div class="cat-head">
+    <div class="cat-mark"></div>
+    <div>
+      <div class="kicker">Category C</div>
+      <h2>Lattice dynamics</h2>
+    </div>
+  </div>
+  <p class="cat-lede">
+    Almost untouched by the room-temperature constraint — every Tier 1 entry was already ambient-native.
+    Only the cryogenic frontier items drop out. Combined with the fact that a 2 ps response rules out
+    counting optical-phonon oscillations but not phonon <em>populations</em>, this is now clearly your
+    lowest-risk category.
+  </p>
+
+  <div class="tierlabel">Tier 1 <span class="tdesc">build the method on these</span></div>
+  <div class="cards">
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Si, Ge, graphite, black phosphorus</h3>
+          <div class="formula">momentum-resolved electron–phonon coupling by 3D thermal diffuse scattering</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Diffuse across full BZ</span>
+          <span class="chip temp">295 K native</span>
+          <span class="chip">Membranes / flakes</span>
+          <span class="chip risk-low">Risk: very low</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why 3D</dt>
+        <dd class="key">Ultrafast electron diffuse scattering conventionally measures one plane and models the
+        rest. A rotation series gives the entire Brillouin zone <em>volume</em>, so the comparison against
+        <em>ab initio</em> electron–phonon matrix elements no longer rests on an assumption about which plane you
+        happened to sample.</dd>
+        <dt>RT impact</dt>
+        <dd>None, and slightly positive: the ambient thermal diffuse background is stronger, which makes the
+        pump-induced change easier to normalise against a well-populated baseline.</dd>
+        <dt>Timing</dt>
+        <dd class="dim">Electron–phonon energy transfer 0.5–20 ps; anharmonic phonon–phonon decay 10–500 ps.
+        Both inside your window and both slower than your response.</dd>
+        <dt>Sample</dt>
+        <dd class="dim">Commercial Si and Ge membranes; exfoliated graphite and black phosphorus.
+        Non-fatiguing, stable indefinitely, radiation-hard.</dd>
+        <dt>Verdict</dt>
+        <dd>Your commissioning sample, unchanged. It validates the whole acquisition chain — drift, tilt
+        reproducibility, delay-axis stability — against a system where the right answer is already known.</dd>
+      </dl>
+      <div class="ruler" data-lo="0.5" data-hi="500"><div class="ruler-cap">e–ph then ph–ph</div></div>
+    </article>
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Nanocrystal acoustic breathing modes</h3>
+          <div class="formula">Au, Ag, Bi₂Se₃, CsPbBr₃ — or the same VO₂ nanobeams</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Bragg peak displacement</span>
+          <span class="chip temp">295 K native</span>
+          <span class="chip">Dispersed NCs</span>
+          <span class="chip risk-low">Risk: very low</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why 3D</dt>
+        <dd class="key">The expansion is anisotropic. A rotation series returns the full transient strain
+        tensor ε<sub>ij</sub>, where one zone axis returns one or two components and a guess at the rest.</dd>
+        <dt>Timing</dt>
+        <dd class="dim">Period scales with size: roughly 10–100 ps for 20–100 nm particles. An almost perfect
+        match to a 2 ps response and a sub-nanosecond delay range — several full oscillations inside your window.</dd>
+        <dt>RT impact</dt>
+        <dd>None. Elastic constants shift slightly with temperature, which is if anything a useful cross-check
+        once you have a heating holder.</dd>
+        <dt>Bonus</dt>
+        <dd>The period is set by size and elastic constants, so a size series gives an internal calibration of
+        your own delay axis — cheap insurance against a systematic timing error.</dd>
+        <dt>Verdict</dt>
+        <dd>Second commissioning sample and a clean standalone result. Very hard for this one to fail.</dd>
+      </dl>
+      <div class="ruler" data-lo="5" data-hi="600"><div class="ruler-cap">breathing period × size</div></div>
+    </article>
+
+    <article class="cand">
+      <div class="cand-top">
+        <div class="cand-id">
+          <h3>Layered van der Waals crystals</h3>
+          <div class="formula">MoS₂ · WSe₂ · graphite · hBN — interlayer breathing and shear</div>
+        </div>
+        <div class="chips">
+          <span class="chip sig">Out-of-plane channels</span>
+          <span class="chip temp">295 K native</span>
+          <span class="chip">Exfoliated flakes</span>
+          <span class="chip risk-low">Risk: low</span>
+        </div>
+      </div>
+      <dl class="facts">
+        <dt>Why 3D</dt>
+        <dd class="key">Everything interesting about a van der Waals crystal is the <em>c</em>-axis: interlayer
+        coupling, out-of-plane thermal transport, layer registry. All of it is invisible at [001], which is
+        where essentially every published ultrafast measurement on these materials sits.</dd>
+        <dt>Timing</dt>
+        <dd class="dim">Interlayer breathing 1–10 ps; out-of-plane energy transfer 10–500 ps.</dd>
+        <dt>RT impact</dt>
+        <dd>None for the interlayer work. Only the cryogenic hydrodynamic-transport experiment is lost.</dd>
+        <dt>Sample</dt>
+        <dd class="dim">Exfoliated flakes, 20–80 nm. Tilt range is the constraint, not sample quality — plan
+        the geometry so <em>c</em>* stays accessible.</dd>
+      </dl>
+      <div class="ruler" data-lo="1" data-hi="500"><div class="ruler-cap">interlayer energy flow</div></div>
+    </article>
+
+  </div>
+
+  <div class="tierlabel">Tier 2 <span class="tdesc">frontier, higher risk</span></div>
+  <div class="t2wrap">
+    <table>
+      <thead>
+        <tr><th>System</th><th>Working point</th><th>Dynamics and why the rotation series matters</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SnSe, PbTe<span class="sub">Bi₂Te₃, halide perovskites</span></td>
+          <td class="temp">295 K native</td>
+          <td>Strongly anharmonic lattices; branch-resolved phonon decay. Ambient is the operating condition
+          for thermoelectrics, so room temperature is the right place to test "phonon glass" claims — by
+          watching which <em>q</em> and which branch the energy leaves through, a volumetric question.</td>
+        </tr>
+        <tr>
+          <td>BaTiO₃ near T<sub>c</sub></td>
+          <td class="temp">T<sub>c</sub> = 393 K<br>heating holder</td>
+          <td>The replacement for SrTiO₃ and KTaO₃, whose quantum-paraelectric physics needs a cryostat.
+          Approaching 393 K the soft mode drops toward zero frequency and becomes marginally resolvable at a
+          2 ps response — plus correlated Ti displacements give 3D diffuse structure to track.</td>
+        </tr>
+        <tr>
+          <td>ScF₃</td>
+          <td class="temp">NTE from 10 K to 1100 K</td>
+          <td>Rigid-unit-mode dynamics behind negative thermal expansion, fully active at ambient. Diffuse rods
+          from correlated octahedral rotation; following them against delay connects a dynamic mechanism to a
+          static anomaly.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= SHORTLIST ================= -->
+<section class="shortlist">
+  <div class="section-head">
+    <h2>If you only pick four</h2>
+    <span class="note">A sequence, not a ranking</span>
+  </div>
+  <p class="lede">Commission on something that cannot fail, take one guaranteed result, then spend the risk
+  budget once on each of the two arguments that justify the instrument.</p>
+
+  <div class="picks">
+    <div class="pick" style="--hue:var(--c-lattice)">
+      <div class="role">First · commission</div>
+      <h4>Si or Ge membrane, then nanocrystal breathing modes</h4>
+      <p>Ambient-native, zero fatigue, known answer. Exercises every part of the 4D chain, and the
+      breathing-mode period doubles as an independent check on your delay-axis calibration.</p>
+    </div>
+    <div class="pick" style="--hue:var(--c-phase)">
+      <div class="role">Second · guaranteed result</div>
+      <h4>VO₂ nanobeams, poised at 325–335 K</h4>
+      <p>Large unambiguous signal at a fluence the sample survives, and a real 3D question waiting at the end
+      of it — which monoclinic phase the transient state actually is. Also teaches you what the heating holder
+      does to drift and eucentricity.</p>
+    </div>
+    <div class="pick" style="--hue:var(--c-disorder)">
+      <div class="role">Third · physics paper</div>
+      <h4>TbTe₃ first, then 1T-TaS₂</h4>
+      <p>The tritelluride is the better first CDW experiment — ambient-native, simpler, well-benchmarked. Take
+      TaS₂ second, at ambient in its NC phase or poised at 340 K for the NC → IC transition, where the physics
+      is literally in the <em>L</em> direction.</p>
+    </div>
+    <div class="pick" style="--hue:var(--c-phase)">
+      <div class="role">Fourth · method paper</div>
+      <h4>Fe(II)-triazole spin-crossover nanoparticles</h4>
+      <p>"We refined a transient molecular structure from a single nanocrystal" is still the sentence that
+      sells U-3DED. Riskier without the cryogenic benchmark, so attempt it once the first three have told you
+      your real drift and dose budget.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPS ================= -->
+<section class="ops">
+  <div class="section-head">
+    <h2>Acquisition notes</h2>
+    <span class="note">The first three are specific to running at ambient</span>
+  </div>
+  <ul class="oplist">
+    <li><strong>Get a heating holder before you get anything else.</strong> It converts the room-temperature
+    constraint from a restriction into a control parameter, and poising 5–15 K below a transition is what
+    makes VO₂, TaS₂, BaTiO₃ and the spin-crossover work give large signals at safe fluence. Nothing else on
+    this list changes your results as much per unit cost.</li>
+    <li><strong>Steady-state heating is now your dominant systematic.</strong> Without a cryostat there is no
+    thermal ballast — the only heat path is the support film and the grid. Keep the repetition rate low
+    (10–50 kHz for oxides on carbon), prefer graphene or thin SiN over amorphous carbon, and compare the
+    t &lt; 0 lattice parameter against a genuine pump-off measurement at every working point. Poised near a
+    transition this is critical: average power can carry you across it without any sign in the data.</li>
+    <li><strong>Assume 3–10× less dose headroom on soft materials.</strong> That factor is what cryo cooling
+    was buying you on perovskites, MOFs, spin-crossover compounds and molecular crystals. Dose-fractionate
+    across many crystallites and merge, rather than pushing one crystal through the full delay series.</li>
+    <li><strong>Scan delay innermost.</strong> At each tilt angle, step the full delay series before moving
+    the stage, so slow drift affects every delay equally at a given tilt instead of being aliased into the
+    time axis. If you must scan angle innermost, bracket each series with repeated reference delays.</li>
+    <li><strong>Put a negative-delay frame at every tilt.</strong> This is what makes the weak-superlattice
+    experiments — Bi-manganites, spin crossover, orbital order — possible at all. Per-tilt normalisation
+    removes the drift that would otherwise swamp a 1% intensity change.</li>
+    <li><strong>Beam-tilt integration matters more here than in static 3DED.</strong> Your
+    <code>BEAM_TILT_STEP</code> and <code>BEAM_TILT_RANGE</code> parameters improve completeness and damp
+    dynamical effects — the difference between tracking intensities and actually refining a transient
+    structure.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Compiled for the U-3DED / UEM3DED instrument at ambient temperature: 295 K base, ~2 ps instrument
+  response, optical delay stage, Timepix3 counting detector, rotation series under TEM alpha tilt.</p>
+  <p>Timescale bars show where each system's <em>structurally observable</em> dynamics fall on a logarithmic axis
+  from 0.5 ps to 1 ns. The hatched region marks dynamics faster than the instrument response.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var LO = Math.log10(0.5), HI = Math.log10(1000), SPAN = HI - LO;
+  function pos(t){ return ((Math.log10(t) - LO) / SPAN) * 100; }
+
+  var ticks = [1, 10, 100, 1000];
+  var labels = ["1 ps", "10 ps", "100 ps", "1 ns"];
+
+  document.querySelectorAll(".ruler").forEach(function(r){
+    var lo = Math.max(0.5, parseFloat(r.dataset.lo));
+    var hi = Math.min(1000, parseFloat(r.dataset.hi));
+
+    var track = document.createElement("div");
+    track.className = "ruler-track";
+
+    var irf = document.createElement("div");
+    irf.className = "ruler-irf";
+    irf.style.width = pos(3) + "%";
+    track.appendChild(irf);
+
+    var bar = document.createElement("div");
+    bar.className = "ruler-bar";
+    bar.style.left = pos(lo) + "%";
+    bar.style.width = Math.max(2, pos(hi) - pos(lo)) + "%";
+    track.appendChild(bar);
+
+    var axis = document.createElement("div");
+    axis.className = "ruler-ticks";
+    ticks.forEach(function(t, i){
+      var s = document.createElement("span");
+      s.style.left = pos(t) + "%";
+      if (i === 0) { s.style.transform = "translateX(-10%)"; }
+      if (i === ticks.length - 1) { s.style.transform = "translateX(-100%)"; }
+      s.textContent = labels[i];
+      axis.appendChild(s);
+    });
+
+    r.insertBefore(axis, r.firstChild);
+    r.insertBefore(track, axis);
+  });
+})();
+</script>
+
+</body>
+</html>

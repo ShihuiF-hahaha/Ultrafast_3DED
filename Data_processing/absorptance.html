@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Absorptance vs tilt angle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#EEF0F4;
+  --surface:#FFFFFF;
+  --surface-2:#F6F7FA;
+  --ink:#12151C;
+  --ink-2:#4E5567;
+  --line:#D7DBE4;
+  --line-soft:#E5E8EF;
+  --accent:#22307A;
+
+  --grid:#E1E0D9;
+  --axis:#C3C2B7;
+  --muted:#898781;
+
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+
+  --geo-axis:#d03b3b;
+  --geo-disk:#8891a5;
+  --geo-beam:#12151C;
+  --geo-pol:#2a78d6;
+
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --w:1280px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D0F15; --surface:#161A23; --surface-2:#1C212C;
+    --ink:#E7EAF1; --ink-2:#A0A8BA; --line:#2A303D; --line-soft:#232936;
+    --accent:#8FA2E8;
+    --grid:#2C2C2A; --axis:#383835; --muted:#898781;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    --geo-axis:#f0796d; --geo-disk:#7d8496; --geo-beam:#E7EAF1; --geo-pol:#3987e5;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D0F15; --surface:#161A23; --surface-2:#1C212C;
+  --ink:#E7EAF1; --ink-2:#A0A8BA; --line:#2A303D; --line-soft:#232936;
+  --accent:#8FA2E8;
+  --grid:#2C2C2A; --axis:#383835; --muted:#898781;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --geo-axis:#f0796d; --geo-disk:#7d8496; --geo-beam:#E7EAF1; --geo-pol:#3987e5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums}
+.wrap{max-width:var(--w);margin:0 auto;padding:0 32px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;line-height:1.2;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+.masthead{padding:48px 0 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+.masthead h1{font-size:clamp(34px,5vw,54px);letter-spacing:-.02em;margin:16px 0 0;max-width:22ch}
+.standfirst{margin-top:16px;max-width:74ch;font-size:17.5px;line-height:1.62;color:var(--ink-2)}
+.standfirst strong{color:var(--ink);font-weight:500}
+
+.layout{display:grid;grid-template-columns:332px minmax(0,1fr);gap:24px;padding:26px 0 8px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+
+.card{background:var(--surface);border:1px solid var(--line-soft);border-radius:5px;padding:20px 24px 22px}
+.card h2{font-size:22px;letter-spacing:-.005em;margin-bottom:3px}
+.card .hint{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+
+.panel{position:sticky;top:16px;display:flex;flex-direction:column;gap:18px}
+.grp{display:flex;flex-direction:column;gap:10px}
+.grp>.lbl{font-size:13px;font-weight:500;color:var(--ink);letter-spacing:.005em;margin-top:1px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px}
+.row label{color:var(--ink-2);font-size:14.5px;line-height:1.35}
+input[type=number],input[type=text],select{
+  font-family:var(--f-mono);font-size:13.5px;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:3px;padding:6px 8px;width:92px;text-align:right}
+input[type=text]{text-align:left;font-family:var(--f-body)}
+select{width:auto;text-align:left;padding:6px 8px}
+input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px}
+.check{display:flex;align-items:center;gap:9px;font-size:14.5px;line-height:1.4;color:var(--ink);cursor:pointer}
+.check .swatchline{width:26px;height:0;border-top-width:2.5px;flex:none}
+.check .pk{width:26px;height:4px;flex:none}
+.btn{font-family:var(--f-body);font-size:14px;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:3px;padding:7px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.divider{height:1px;background:var(--line-soft)}
+
+.rightcol{display:flex;flex-direction:column;gap:24px;min-width:0}
+.chartcard{padding:22px 24px 16px}
+.georow{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;margin-top:12px}
+#geo{width:100%;max-width:660px;height:auto;flex:3 1 460px}
+.geoside{flex:1 1 260px;min-width:240px;display:flex;flex-direction:column;gap:14px}
+.geoslider{display:flex;align-items:center;gap:11px;font-size:14px;color:var(--ink-2);flex-wrap:wrap}
+.geoslider input[type=range]{flex:1 1 120px;accent-color:var(--accent);min-width:110px}
+.geostats{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:14px;
+  padding:12px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.geostats dt{color:var(--ink-2);font-size:13.5px}
+.geostats dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.charthead{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:2px}
+.charthead h2{font-size:24px;letter-spacing:-.01em}
+.charthead .sub{font-size:12.5px;color:var(--ink-2);font-family:var(--f-mono)}
+#plot{width:100%;display:block;touch-action:none}
+.legend{display:flex;flex-wrap:wrap;gap:9px 22px;padding-top:12px;border-top:1px solid var(--line-soft);margin-top:8px}
+.lgi{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2)}
+.lgi .key{width:28px;height:2.5px;border-radius:2px;flex:none}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;padding:9px 11px;font-size:13px;box-shadow:0 6px 22px rgba(0,0,0,.13);
+  min-width:190px;z-index:20;opacity:0;transition:opacity .08s}
+.tip .th{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);margin-bottom:6px}
+.tip .tr{display:flex;align-items:center;gap:7px;justify-content:space-between;margin-top:3px}
+.tip .tr .nm{display:flex;align-items:center;gap:7px;color:var(--ink)}
+.tip .tr .k{width:16px;height:2.5px;flex:none;border-radius:2px}
+.tip .tr .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+
+.section{padding:30px 0 0}
+.section-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.section-head h2{font-size:30px;letter-spacing:-.015em}
+.section-head .note{font-size:13.5px;color:var(--ink-2);max-width:62ch;line-height:1.5}
+
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{font-weight:500;font-size:13px;color:var(--ink-2);text-align:right;padding:0 10px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.l{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--line-soft);text-align:right;vertical-align:middle}
+td.l{text-align:left}
+tbody tr:hover{background:var(--surface-2)}
+.sname{display:flex;align-items:center;gap:9px}
+.sname .key{width:22px;height:2.5px;border-radius:2px;flex:none}
+.sname input{width:190px}
+.snote{font-size:12.5px;color:var(--ink-2);margin-top:2px;line-height:1.35}
+td input[type=number]{width:94px}
+.del{border:none;background:none;color:var(--ink-2);cursor:pointer;font-size:16px;line-height:1;padding:2px 5px}
+.del:hover{color:var(--s8)}
+.tablewrap{overflow-x:auto}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+details{margin-top:12px}
+summary{cursor:pointer;font-size:14.5px;color:var(--accent)}
+.notes{max-width:74ch;color:var(--ink-2);font-size:16px;line-height:1.68;display:flex;flex-direction:column;gap:14px}
+.notes strong{color:var(--ink);font-weight:500}
+.eq{font-family:var(--f-mono);font-size:13.5px;line-height:1.7;background:var(--surface-2);
+  border:1px solid var(--line-soft);border-radius:4px;padding:14px 16px;color:var(--ink);
+  overflow-x:auto;white-space:pre}
+footer{padding:38px 0 60px;margin-top:8px;border-top:1px solid var(--line-soft);
+  color:var(--ink-2);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow"><span class="dot"></span><span>U-3DED · pump optics</span><span>·</span><span>Fresnel / thin-film transfer matrix</span></div>
+  <h1>Absorptance vs sample tilt angle</h1>
+  <p class="standfirst">Give a complex dielectric function <strong>ε = ε₁ + iε₂</strong> and a film thickness, and this page computes how much
+  of the pump each sample absorbs as it is tilted: <strong>A(θ) = 1 − R − T</strong> from a coherent three-medium model
+  (vacuum / sample / substrate), with the beam's own polarisation resolved into s and p at every angle of the series.
+  Every number in the table is editable and the curves update as you type.</p>
+</header>
+
+<div class="layout">
+
+  <aside class="panel">
+    <section class="card">
+      <h2>Experimental conditions</h2>
+      <p class="hint" style="margin-bottom:14px">Pump beam and geometry</p>
+      <div class="grp">
+        <div class="row"><label for="lam">Pump λ (nm)</label><input type="number" id="lam" value="800" min="150" max="3000" step="10"></div>
+        <div class="row"><label for="n0">Ambient n₀</label><input type="number" id="n0" value="1" min="1" max="4" step="0.01"></div>
+        <div class="row"><label for="nsub">Substrate n<sub>sub</sub></label><input type="number" id="nsub" value="1" min="1" max="4" step="0.01"></div>
+        <div class="row"><select id="subpick" style="width:100%">
+            <option value="1">vacuum 1.00</option>
+            <option value="2.0">SiNx 2.00</option>
+            <option value="1.45">SiO₂ 1.45</option>
+            <option value="3.68">Si 3.68</option>
+          </select></div>
+        <p class="hint" id="subhint" style="margin-top:-3px">free-standing, vacuum behind</p>
+        <div class="divider" style="margin:6px 0"></div>
+        <div class="row"><label for="a0">Pump polar angle ψ (°)</label><input type="number" id="a0" value="0" min="-89" max="89" step="1"></div>
+        <div class="row"><label for="phi">Pump azimuth φ (°)</label><input type="number" id="phi" value="0" min="-180" max="180" step="5"></div>
+        <p class="hint">ψ from the optical axis, φ from the plane perpendicular to the tilt axis. At φ = 0 the s/p split stays fixed and θ = |α − ψ|.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Plot settings</h2>
+      <p class="hint" style="margin-bottom:14px">What to draw, and how</p>
+      <div class="grp">
+        <div class="lbl">Vertical axis</div>
+        <div class="row"><select id="ymode" style="width:100%">
+          <option value="A">Absorptance A(θ)</option>
+          <option value="Acos">Excitation density A·cos θ (spot spreads with tilt)</option>
+          <option value="wp">p-fraction of the beam w_p (geometry only)</option>
+          <option value="R">Reflectance R(θ)</option>
+          <option value="T">Transmittance T(θ)</option>
+        </select></div>
+        <div class="divider" style="margin:4px 0"></div>
+        <div class="lbl">Polarisation</div>
+        <label class="check"><input type="checkbox" id="polb" checked><span class="pk" data-dash=""></span>your beam — linear at γ = <span class="mono" id="gamlab">0°</span></label>
+        <label class="check"><input type="checkbox" id="polp"><span class="pk" data-dash="7 4"></span>pure p (reference)</label>
+        <label class="check"><input type="checkbox" id="pols"><span class="pk" data-dash="2 3"></span>pure s (reference)</label>
+        <label class="check"><input type="checkbox" id="pola"><span class="pk" data-dash="9 3 2 3"></span>unpolarised average</label>
+        <div class="row" style="margin-top:2px"><label for="gam">Polarisation γ (°)</label><input type="number" id="gam" value="0" min="-180" max="180" step="5"></div>
+        <p class="hint">Measured from the tilt axis, transverse to the beam: 0 along it, 90° across it, 45° if the beam was never deliberately aligned.</p>
+        <div class="divider" style="margin:4px 0"></div>
+        <div class="lbl">Model</div>
+        <label class="check"><input type="checkbox" id="bulk">Semi-infinite bulk (A = 1 − R, thickness ignored)</label>
+        <div class="divider" style="margin:4px 0"></div>
+        <div class="lbl">Tilt range (°)</div>
+        <div class="row"><label for="amin">from</label><input type="number" id="amin" value="-80" min="-89" max="89" step="5"></div>
+        <div class="row"><label for="amax">to</label><input type="number" id="amax" value="80" min="-89" max="89" step="5"></div>
+        <p class="hint" style="margin-top:-3px">Match your holder. The two arms are mirror images only when ψ = 0.</p>
+        <div class="divider" style="margin:4px 0"></div>
+        <div class="row" style="gap:8px">
+          <button class="btn" id="csv">Export CSV</button>
+          <button class="btn" id="reset">Restore defaults</button>
+        </div>
+      </div>
+    </section>
+  </aside>
+
+  <div class="rightcol">
+
+  <section class="card chartcard" id="chartcard" style="position:relative">
+    <div class="charthead">
+      <h2 id="charttitle">Absorptance across the tilt range</h2>
+      <span class="sub" id="chartsub"></span>
+    </div>
+    <svg id="plot" height="500" role="img" aria-label="Absorptance of each sample as a function of tilt angle"></svg>
+    <div class="legend" id="legend"></div>
+    <div class="tip" id="tip"></div>
+  </section>
+
+  <section class="card" id="geocard">
+    <div class="charthead">
+      <h2 style="font-size:21px">Beam and sample geometry</h2>
+      <span class="sub" id="geosub"></span>
+    </div>
+    <div class="georow">
+      <svg id="geo" viewBox="0 0 470 358" role="img"
+        aria-label="Schematic of the pump beam, its polarisation, and the tilted sample disk"></svg>
+      <div class="geoside">
+        <label class="geoslider" for="aview">Sample tilt α
+          <input type="range" id="aview" min="-80" max="80" step="1" value="0">
+          <span class="mono" id="aviewv">0°</span>
+        </label>
+        <p class="hint">Hover the plot above and this figure follows the angle under the cursor.</p>
+        <dl class="geostats" id="geostats"></dl>
+        <p class="hint">The red line is the α-tilt axis, fixed in the lab; the disk turns about it. The shaded patch is the beam footprint, stretching as 1/cos θ.</p>
+      </div>
+    </div>
+  </section>
+
+  </div>
+
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Samples and optical constants</h2>
+    <span class="note">ε₁, ε₂ and n, k are linked both ways · A(0°) and A(45°) are the unpolarised average, relative to α₀</span>
+  </div>
+  <div class="card tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="l" style="width:34px">Show</th>
+          <th class="l">Sample</th>
+          <th>ε₁</th><th>ε₂</th><th>n</th><th>k</th>
+          <th>Thickness d (nm)</th>
+          <th>A(0°)</th><th>A(45°)</th>
+          <th style="width:34px"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" id="add">＋ Add sample</button>
+    </div>
+  </div>
+
+  <details>
+    <summary>Show the angle-by-angle table (every 5°)</summary>
+    <div class="card tablewrap" style="margin-top:10px">
+      <table><thead id="dthead"></thead><tbody id="dtbody"></tbody></table>
+    </div>
+  </details>
+</section>
+
+<section class="section">
+  <div class="section-head"><h2>Method and where it applies</h2></div>
+  <div class="notes">
+    <p>The complex index follows from the dielectric function: <strong>ñ = n + ik = √(ε₁ + iε₂)</strong>, i.e. n² − k² = ε₁ and 2nk = ε₂. Tilt is signed: when the beam and the tilt motion share one plane (φ = 0, the general case is below) the angle of incidence is θ = |α − ψ|, so with the pump on the optical axis (ψ = 0) the two arms of a tilt series are mirror images, and with the pump off axis they are not — one arm walks towards normal incidence while the other walks towards grazing. Should θ pass 90° the beam has come round to the back of the sample, so it folds back to 180° − θ and the stack is entered from the substrate side (on a free-standing film the two faces are equivalent).</p>
+    <div class="eq">q_j = √(ñ_j² − n₀²sin²θ)        β = 2π d q₁ / λ
+r = (r₀₁ + r₁₂e^{2iβ}) / (1 + r₀₁r₁₂e^{2iβ})
+t = t₀₁t₁₂e^{iβ} / (1 + r₀₁r₁₂e^{2iβ})
+R = |r|²    T = (Φ₂/Φ₀)|t|²    A = 1 − R − T</div>
+    <p>r and t are the interface Fresnel coefficients for s or p polarisation, and Φ is the normal Poynting flux factor in that medium (s: Re q; p: Re(ñ*q/ñ)). Multiple reflections inside the film add <strong>coherently</strong>, so the ripples on the curves are real Fabry–Pérot interference and they move with thickness and wavelength. The longer geometric path through the film at oblique incidence (∝ 1/cos θ₁) is already contained in β.</p>
+    <p><strong>Relative excitation density</strong> A·cos θ: the beam has a fixed cross-section, so at incidence θ its footprint on the sample covers 1/cos θ more area and the energy arriving per unit sample area falls by cos θ. What each excited unit cell actually receives therefore scales as A(θ)·cos θ, normalised here to θ = 0. This — not A itself — is the quantity that tells you how much excitation you lose along a tilt series and how much pump energy to add back. The two effects partly cancel: the footprint spreads, but the optical path through the film lengthens as 1/cos θ₁ and the interface transmits more p-polarised light, which is why A itself often rises with angle while A·cos θ falls.</p>
+    <p><strong>When the tilt axis is not perpendicular to the plane of incidence.</strong> s and p are defined by the plane containing the beam and the sample normal — and that plane turns as the sample tilts, unless the tilt axis happens to be perpendicular to it. Writing x̂ for the tilt axis, ẑ for the electron optical axis, the beam direction as (ψ, φ) and the sample normal as n̂(α) = (0, −sin α, cos α):</p>
+    <div class="eq">cos θ(α) = cos ψ cos α + sin ψ cos φ sin α = C·cos(α − δ)
+   C = √(cos²ψ + sin²ψ cos²φ)      tan δ = sin ψ cos φ / cos ψ
+ŝ = û × n̂ / |û × n̂|      p̂ = ŝ × î      w_s = (ê·ŝ)²    w_p = (ê·p̂)² = 1 − w_s
+A(α) = w_s(α)·A_s(θ) + w_p(α)·A_p(θ)</div>
+    <p>At φ = 0 the beam sits in the plane the tilt sweeps through: ŝ stays along the tilt axis, the split w_s, w_p never changes, and θ = |α − ψ| — the simple case. At φ = 90° the beam lies in the plane containing the tilt axis, and everything moves: θ only reaches ψ at best (C = cos ψ, so normal incidence is unreachable), and the plane of incidence swings around the beam as α runs. A beam that is pure s at α = 0 there is about 65% s at 20°, 26% at 40° and 8% at 60° — it turns into a p-polarised beam over the course of a tilt series without anyone touching the polariser. Because s and p are the decoupled eigenpolarisations of an isotropic film, the absorbed power is just the weighted sum above, with no cross term, and it is independent of the phase between the two components — so the same formula covers elliptical and circular light (w_s = w_p = ½ for circular, identical to unpolarised as far as absorption is concerned).</p>
+    <p><strong>A geometric constraint that follows:</strong> the electron probe's footprint on the sample grows by the same 1/cos α, so the pump spot has to cover the probed region at the largest tilt in the series, not just at zero. If it does not, the diffraction pattern at high tilt mixes excited and unexcited material and the apparent dynamics wash out — a systematic that looks like a smaller signal rather than an error. Size the spot at the tilt extreme, and keep the beam wide enough that the cos θ factor above is the only geometric term in play.</p>
+    <p><strong>Before you rely on it:</strong> the model assumes an isotropic dielectric function (for uniaxial layered materials such as 1T-TaS₂ or LaTe₃ the in-plane and out-of-plane ε differ substantially — a rigorous treatment needs anisotropic Fresnel coefficients), flat interfaces, a transparent semi-infinite substrate, and no interference from the support membrane. The preset n and k values are <strong>approximate literature figures near 800 nm, meant only as a starting point</strong> — for setting a real pump fluence, type in your own ellipsometry or transmission data. ε is wavelength dependent, so if you change λ you must change ε too.</p>
+  </div>
+</section>
+
+<footer>U-3DED · generated <span id="gen"></span> · single offline HTML file, open it in any browser</footer>
+
+</div>
+<script>
+/* ---------- complex helpers: [re, im] ---------- */
+var Cx = {
+  add: function (a, b) { return [a[0] + b[0], a[1] + b[1]]; },
+  sub: function (a, b) { return [a[0] - b[0], a[1] - b[1]]; },
+  mul: function (a, b) { return [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]]; },
+  div: function (a, b) {
+    var d = b[0] * b[0] + b[1] * b[1];
+    return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d];
+  },
+  scale: function (a, s) { return [a[0] * s, a[1] * s]; },
+  sqrt: function (a) {
+    var m = Math.hypot(a[0], a[1]);
+    var re = Math.sqrt(Math.max((m + a[0]) / 2, 0));
+    var im = Math.sqrt(Math.max((m - a[0]) / 2, 0));
+    if (a[1] < 0) im = -im;
+    return [re, im];
+  },
+  exp: function (a) { var e = Math.exp(a[0]); return [e * Math.cos(a[1]), e * Math.sin(a[1])]; },
+  abs2: function (a) { return a[0] * a[0] + a[1] * a[1]; }
+};
+
+/* eps = e1 + i e2  ->  n = n + i k  (k >= 0) */
+function epsToNk(e1, e2) {
+  var m = Math.hypot(e1, e2);
+  return { n: Math.sqrt(Math.max((m + e1) / 2, 0)), k: Math.sqrt(Math.max((m - e1) / 2, 0)) };
+}
+function nkToEps(n, k) { return { e1: n * n - k * k, e2: 2 * n * k }; }
+
+/* transverse wave-vector factor q = sqrt(n^2 - u^2), branch Im(q) >= 0 */
+function qOf(nc, u) {
+  var n2 = Cx.mul(nc, nc);
+  var q = Cx.sqrt([n2[0] - u * u, n2[1]]);
+  if (q[1] < 0) q = [-q[0], -q[1]];
+  return q;
+}
+
+/* interface amplitude coefficients, i -> j */
+function fresnel(ni, nj, qi, qj, pol) {
+  if (pol === 's') {
+    var den = Cx.add(qi, qj);
+    return { r: Cx.div(Cx.sub(qi, qj), den), t: Cx.div(Cx.scale(qi, 2), den) };
+  }
+  var ni2 = Cx.mul(ni, ni), nj2 = Cx.mul(nj, nj);
+  var A = Cx.mul(nj2, qi), B = Cx.mul(ni2, qj);
+  var d = Cx.add(A, B);
+  return {
+    r: Cx.div(Cx.sub(A, B), d),
+    t: Cx.div(Cx.scale(Cx.mul(Cx.mul(ni, nj), qi), 2), d)
+  };
+}
+
+/*
+ * Coherent three-medium stack: ambient n0 | film (n1, thickness d) | substrate n2
+ * theta: angle of incidence in degrees, lambda and d in nm.
+ * Returns {R, T, A} for one polarisation ('s' or 'p').
+ */
+function slabRTA(n0, n1, n2, d, lambda, thetaDeg, pol) {
+  var th = thetaDeg * Math.PI / 180;
+  var u = n0[0] * Math.sin(th);            // n0 assumed real
+  var q0 = qOf(n0, u), q1 = qOf(n1, u), q2 = qOf(n2, u);
+
+  var f01 = fresnel(n0, n1, q0, q1, pol);
+  var f12 = fresnel(n1, n2, q1, q2, pol);
+
+  var beta = Cx.scale(q1, 2 * Math.PI * d / lambda);      // phase across the film
+  var e2b = Cx.exp([-2 * beta[1], 2 * beta[0]]);          // exp(2 i beta)
+  var eb = Cx.exp([-beta[1], beta[0]]);                   // exp(i beta)
+
+  var rr = Cx.mul(f01.r, f12.r);
+  var den = Cx.add([1, 0], Cx.mul(rr, e2b));
+  var r = Cx.div(Cx.add(f01.r, Cx.mul(f12.r, e2b)), den);
+  var t = Cx.div(Cx.mul(Cx.mul(f01.t, f12.t), eb), den);
+
+  var R = Cx.abs2(r);
+  /* normal Poynting flux factor:  s -> Re(q),  p -> Re(conj(n) q / n) */
+  var flux = function (nc, q) {
+    if (pol === 's') return q[0];
+    return Cx.mul(q, Cx.div([nc[0], -nc[1]], nc))[0];
+  };
+  var T = (flux(n2, q2) / flux(n0, q0)) * Cx.abs2(t);
+  if (!isFinite(T) || T < 0) T = 0;
+  return { R: R, T: T, A: Math.max(0, 1 - R - T) };
+}
+
+/* semi-infinite absorber: A = 1 - R at the front interface only */
+function bulkRTA(n0, n1, thetaDeg, pol) {
+  var th = thetaDeg * Math.PI / 180;
+  var u = n0[0] * Math.sin(th);
+  var q0 = qOf(n0, u), q1 = qOf(n1, u);
+  var f = fresnel(n0, n1, q0, q1, pol);
+  var R = Cx.abs2(f.r);
+  return { R: R, T: 0, A: Math.max(0, 1 - R) };
+}
+
+/* one sample, one angle -> {s, p, avg} absorptance */
+function absorptance(sample, cfg, thetaDeg) {
+  var n0 = [cfg.n0, 0];
+  var n1 = [sample.n, sample.k];
+  var n2 = [cfg.nsub, 0];
+  var out = {};
+  ['s', 'p'].forEach(function (pol) {
+    var res = cfg.bulk ? bulkRTA(n0, n1, thetaDeg, pol)
+                       : slabRTA(n0, n1, n2, sample.d, cfg.lambda, thetaDeg, pol);
+    out[pol] = res;
+  });
+  out.avg = {
+    R: (out.s.R + out.p.R) / 2,
+    T: (out.s.T + out.p.T) / 2,
+    A: (out.s.A + out.p.A) / 2
+  };
+  return out;
+}
+
+
+/* ============================================================
+   Lab geometry
+   x = alpha-tilt axis, z = electron optical axis, y = x cross z.
+   Sample normal at zero tilt is +z; tilting by alpha rotates it about x.
+   The pump direction is fixed in the lab: polar angle psi from z,
+   azimuth phi measured from the plane perpendicular to the tilt axis
+   (phi = 0 puts the beam in the y-z plane, phi = 90 in the x-z plane).
+   Linear polarisation angle gamma is measured from the tilt axis,
+   in the plane transverse to the beam.
+   ============================================================ */
+function v3cross(a, b){
+  return [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]];
+}
+function v3dot(a, b){ return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+function v3norm(a){
+  var m = Math.hypot(a[0], a[1], a[2]);
+  return m < 1e-12 ? null : [a[0]/m, a[1]/m, a[2]/m];
+}
+
+/* Returns the angle of incidence and the s/p power split of the beam
+   at sample tilt alpha. ws + wp = 1. back = beam reaches the rear face. */
+function beamGeometry(psiDeg, phiDeg, gammaDeg, alphaDeg){
+  var D = Math.PI / 180;
+  var ps = psiDeg * D, ph = phiDeg * D, ga = gammaDeg * D, al = alphaDeg * D;
+
+  /* unit vector from the sample towards the source */
+  var u = [Math.sin(ps) * Math.sin(ph), -Math.sin(ps) * Math.cos(ph), Math.cos(ps)];
+  /* sample normal after an alpha tilt about x */
+  var n = [0, -Math.sin(al), Math.cos(al)];
+
+  var cth = v3dot(u, n);
+  var back = cth < 0;
+  var th = Math.acos(Math.max(-1, Math.min(1, Math.abs(cth))));
+
+  var ihat = [-u[0], -u[1], -u[2]];            /* propagation direction */
+
+  /* transverse polarisation basis, e1 along the tilt axis projected out of the beam */
+  var ref = [1, 0, 0];
+  var d = v3dot(ref, ihat);
+  var e1 = v3norm([ref[0] - d*ihat[0], ref[1] - d*ihat[1], ref[2] - d*ihat[2]]);
+  if (!e1){                                    /* beam parallel to the tilt axis */
+    e1 = v3norm(v3cross(ihat, [0, 0, 1])) || [0, 1, 0];
+  }
+  var e2 = v3cross(ihat, e1);
+  var e = [Math.cos(ga)*e1[0] + Math.sin(ga)*e2[0],
+           Math.cos(ga)*e1[1] + Math.sin(ga)*e2[1],
+           Math.cos(ga)*e1[2] + Math.sin(ga)*e2[2]];
+
+  var out = {th:th, back:back, ws:0.5, wp:0.5,
+             u:u, n:n, i:ihat, e:e, s:null, p:null};
+
+  var shat = v3norm(v3cross(u, n));            /* normal to the plane of incidence */
+  if (!shat) return out;                       /* normal incidence: s and p degenerate */
+  var phat = v3cross(shat, ihat);
+  out.s = shat; out.p = phat;
+
+  var as = v3dot(e, shat), ap = v3dot(e, phat);
+  var tot = as*as + ap*ap;
+  if (tot < 1e-12) return out;
+  out.ws = as*as/tot; out.wp = ap*ap/tot;
+  return out;
+}
+
+/* ================= app ================= */
+var SLOTS = ['--s1','--s2','--s3','--s4','--s5','--s6','--s7','--s8'];
+var POLS = [
+  {id:'beam', label:'beam',         dash:'',          key:'polb'},
+  {id:'p',    label:'pure p',       dash:'7 4',       key:'polp'},
+  {id:'s',    label:'pure s',       dash:'2 3',       key:'pols'},
+  {id:'avg',  label:'unpolarised',  dash:'9 3 2 3',   key:'pola'}
+];
+
+/* a small line-style key, drawn as inline SVG so every dash pattern renders exactly */
+function keySvg(color, dash, w){
+  w = w || 28;
+  return '<svg width="' + w + '" height="4" style="flex:none" aria-hidden="true">' +
+         '<line x1="0" y1="2" x2="' + w + '" y2="2" stroke="' + color + '" stroke-width="2.5"' +
+         (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/></svg>';
+}
+
+var DEFAULTS = [
+  {name:'VO₂ (monoclinic, insulating)', note:'room-temperature phase, below 340 K', n:3.00, k:0.36, d:60,  on:true},
+  {name:'VO₂ (rutile, metallic)',       note:'above 340 K, after the transition',   n:2.05, k:1.45, d:60,  on:true},
+  {name:'1T-TaS₂',                      note:'layered, in-plane value',             n:3.40, k:1.90, d:50,  on:true},
+  {name:'PdSe₂',                        note:'pentagonal layered, strongly anisotropic — in-plane value', n:3.90, k:1.20, d:50, on:true},
+  {name:'Ta₂NiSe₅',                     note:'structural transition at 328 K',      n:3.60, k:0.85, d:60,  on:false},
+  {name:'LaTe₃ / TbTe₃',                note:'metallic CDW',                        n:2.40, k:3.00, d:40,  on:false},
+  {name:'λ-Ti₃O₅',                      note:'photoinduced transition, metastable at RT', n:2.60, k:0.90, d:80, on:false},
+  {name:'Bi₀.₅Ca₀.₅MnO₃',               note:'room-temperature charge-ordered manganite', n:2.60, k:0.55, d:60, on:false},
+  {name:'Au (reference)',               note:'gold film, for calibrating the beam path',  n:0.16, k:4.90, d:30, on:false}
+];
+
+var state = {samples:[], hoverA:null};
+var uid = 0;
+
+function mkSample(src, slot){
+  return {id:++uid, name:src.name, note:src.note||'', n:src.n, k:src.k, d:src.d, on:!!src.on, slot:slot};
+}
+function resetSamples(){
+  state.samples = DEFAULTS.map(function(s,i){ return mkSample(s, i % 8); });
+}
+/* keep every visible sample on its own colour slot */
+function ensureSlot(s){
+  var used = {};
+  state.samples.forEach(function(x){ if (x.on && x.id !== s.id) used[x.slot] = 1; });
+  if (used[s.slot]) for (var i = 0; i < 8; i++) if (!used[i]){ s.slot = i; break; }
+}
+function cssVar(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function colorOf(s){ return cssVar(SLOTS[s.slot % 8]); }
+
+function cfg(){
+  return {
+    lambda:+document.getElementById('lam').value || 800,
+    n0:+document.getElementById('n0').value || 1,
+    nsub:+document.getElementById('nsub').value || 1,
+    a0:+document.getElementById('a0').value || 0,
+    phi:+document.getElementById('phi').value || 0,
+    gam:+document.getElementById('gam').value || 0,
+    bulk:document.getElementById('bulk').checked,
+    amin:tiltRange()[0],
+    amax:tiltRange()[1],
+    ymode:document.getElementById('ymode').value,
+    pols:POLS.filter(function(p){ return document.getElementById(p.key).checked; })
+  };
+}
+function visible(){ return state.samples.filter(function(s){ return s.on; }); }
+
+/* the beam series is named after the polarisation angle actually set */
+function labelBeam(){
+  var gv = +document.getElementById('gam').value || 0;
+  POLS[0].label = 'beam (γ ' + gv + '°)';
+  var lab = document.getElementById('gamlab');
+  if (lab) lab.textContent = gv + '°';
+}
+
+/* tilt range, clamped and ordered */
+function tiltRange(){
+  var lo = +document.getElementById('amin').value;
+  var hi = +document.getElementById('amax').value;
+  if (!isFinite(lo)) lo = -80;
+  if (!isFinite(hi)) hi = 80;
+  lo = Math.max(-89, Math.min(89, lo));
+  hi = Math.max(-89, Math.min(89, hi));
+  if (hi - lo < 5) hi = lo + 5;
+  return [lo, hi];
+}
+
+/* angle of incidence and s/p split at tilt alpha, in degrees.
+   Past 90 deg the beam meets the back of the sample, so the angle folds back
+   and the stack is entered from the substrate side. */
+function incidence(c, alpha){
+  var g = beamGeometry(c.a0, c.phi, c.gam, alpha);
+  var th = g.th * 180 / Math.PI;
+  if (th > 89.9) th = 89.9;
+  return {th:th, back:g.back, ws:g.ws, wp:g.wp};
+}
+
+/* value of the plotted quantity for one sample / polarisation at tilt alpha */
+function valueAt(sample, c, pol, alpha){
+  var g = incidence(c, alpha);
+  var cc = g.back ? {lambda:c.lambda, n0:c.nsub, nsub:c.n0, bulk:c.bulk} : c;
+  var res = absorptance(sample, cc, g.th);
+  var pick = function (q){
+    return pol === 'beam' ? g.ws * res.s[q] + g.wp * res.p[q] : res[pol][q];
+  };
+  if (c.ymode === 'R') return pick('R');
+  if (c.ymode === 'T') return pick('T');
+  if (c.ymode === 'wp') return g.wp;
+  if (c.ymode === 'Acos'){
+    var ref = absorptance(sample, c, 0).s.A;      /* s and p are degenerate at theta = 0 */
+    return ref > 1e-9 ? pick('A') * Math.cos(g.th * Math.PI/180) / ref : 0;
+  }
+  return pick('A');
+}
+
+function angleGrid(c){
+  var a = [], step = (c.amax - c.amin) / 320;
+  for (var i = 0; i <= 320; i++) a.push(+(c.amin + i * step).toFixed(3));
+  return a;
+}
+
+/* ---------------- chart ---------------- */
+var SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, txt){
+  var e = document.createElementNS(SVGNS, tag);
+  for (var k in attrs) e.setAttribute(k, attrs[k]);
+  if (txt !== undefined) e.textContent = txt;
+  return e;
+}
+
+var geom = null;
+
+function drawChart(){
+  var c = cfg();
+  var svg = document.getElementById('plot');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var oldTip = document.getElementById('tip');
+  if (oldTip) oldTip.style.opacity = 0;          /* never leave a stale readout on screen */
+
+  var W = svg.clientWidth || 900;
+  var H = Math.round(Math.max(455, Math.min(580, W * 0.60)));
+  svg.setAttribute('height', H);
+  var M = {t:22, r:200, b:52, l:66};
+  if (W < 640) M.r = 22;
+  var pw = W - M.l - M.r, ph = H - M.t - M.b;
+  var xs = angleGrid(c);
+  var x0 = xs[0], x1 = xs[xs.length-1];
+
+  var series = [];
+  if (c.ymode === 'wp'){
+    /* the s/p split depends only on the geometry, so one curve says it all */
+    var ref = visible()[0] || state.samples[0];
+    if (ref) series.push({sample:{name:'beam'}, pol:POLS[0],
+      ys:xs.map(function(a){ return valueAt(ref, c, 'beam', a); }), color:cssVar('--s1')});
+  } else {
+    visible().forEach(function(s){
+      c.pols.forEach(function(p){
+        var ys = xs.map(function(a){ return valueAt(s, c, p.id, a); });
+        series.push({sample:s, pol:p, ys:ys, color:colorOf(s)});
+      });
+    });
+  }
+
+  /* the axis always starts at zero; only the empty headroom above the data is trimmed */
+  var ymax = 1, ymin = 0, ystep = 0.2, i, m = 0;
+  series.forEach(function(se){ se.ys.forEach(function(v){ if (v > m) m = v; }); });
+  ymax = Math.max(0.2, m * 1.04);
+  if (c.ymode !== 'Acos') ymax = Math.min(1, ymax);
+  var cand = [0.05, 0.1, 0.2, 0.25, 0.5, 1];
+  for (i = 0; i < cand.length; i++){ if (ymax / cand[i] <= 6){ ystep = cand[i]; break; } }
+  ymax = Math.ceil(ymax / ystep - 1e-9) * ystep;
+
+  var X = function(a){ return M.l + (a - x0) / (x1 - x0) * pw; };
+  var Y = function(v){ return M.t + ph - (v - ymin) / (ymax - ymin) * ph; };
+  geom = {c:c, xs:xs, series:series, X:X, Y:Y, M:M, pw:pw, ph:ph, x0:x0, x1:x1};
+
+  var grid = cssVar('--grid'), axis = cssVar('--axis'), muted = cssVar('--muted'), ink2 = cssVar('--ink-2');
+
+  /* y grid + ticks */
+  var nTicks = Math.round((ymax - ymin) / ystep);
+  for (i = 0; i <= nTicks; i++){
+    var v = ymin + ystep * i;
+    var y = Y(v);
+    svg.appendChild(el('line', {x1:M.l, x2:M.l+pw, y1:y, y2:y, stroke:grid, 'stroke-width':1}));
+    svg.appendChild(el('text', {x:M.l-12, y:y+4, 'text-anchor':'end', fill:muted,
+      'font-size':12.5, 'font-family':'var(--f-mono)'}, v.toFixed(2)));
+  }
+  /* x ticks */
+  var step = (x1 - x0) > 100 ? 20 : 10;
+  for (var a = Math.ceil(x0/step)*step; a <= x1 + 0.001; a += step){
+    var xx = X(a);
+    svg.appendChild(el('line', {x1:xx, x2:xx, y1:M.t, y2:M.t+ph, stroke:grid, 'stroke-width':1}));
+    svg.appendChild(el('text', {x:xx, y:M.t+ph+22, 'text-anchor':'middle', fill:muted,
+      'font-size':12.5, 'font-family':'var(--f-mono)'}, a + '°'));
+  }
+  /* cos(theta) = C cos(alpha - delta): closest approach to normal, and grazing */
+  var D = Math.PI/180;
+  var Cg = Math.hypot(Math.cos(c.a0*D), Math.sin(c.a0*D) * Math.cos(c.phi*D));
+  var dg = Math.atan2(Math.sin(c.a0*D) * Math.cos(c.phi*D), Math.cos(c.a0*D)) / D;
+  var thMin = Math.acos(Math.min(1, Cg)) / D;
+  if (dg >= x0 && dg <= x1){
+    svg.appendChild(el('line', {x1:X(dg), x2:X(dg), y1:M.t, y2:M.t+ph, stroke:axis,
+      'stroke-width':1, 'stroke-dasharray':'2 4'}));
+    svg.appendChild(el('text', {x:X(dg)+6, y:M.t+13, fill:muted, 'font-size':12,
+      'font-family':'var(--f-mono)'},
+      thMin < 0.05 ? 'normal incidence' : 'closest to normal, θ = ' + thMin.toFixed(0) + '°'));
+  }
+  /* grazing incidence: beyond this the beam reaches the back face */
+  [dg - 90, dg + 90].forEach(function(ag){
+    if (ag < x0 || ag > x1) return;
+    svg.appendChild(el('line', {x1:X(ag), x2:X(ag), y1:M.t, y2:M.t+ph, stroke:axis,
+      'stroke-width':1, 'stroke-dasharray':'2 4'}));
+    svg.appendChild(el('text', {x:X(ag)+6, y:M.t+13, fill:muted, 'font-size':12,
+      'font-family':'var(--f-mono)'}, 'grazing'));
+  });
+  /* axes */
+  svg.appendChild(el('line', {x1:M.l, x2:M.l+pw, y1:M.t+ph, y2:M.t+ph, stroke:axis, 'stroke-width':1}));
+  svg.appendChild(el('line', {x1:M.l, x2:M.l, y1:M.t, y2:M.t+ph, stroke:axis, 'stroke-width':1}));
+  svg.appendChild(el('text', {x:M.l+pw/2, y:H-10, 'text-anchor':'middle', fill:ink2, 'font-size':13.5}, 'Sample tilt angle α (°)'));
+  var ylab = el('text', {x:16, y:M.t+ph/2, 'text-anchor':'middle', fill:ink2, 'font-size':13.5,
+    transform:'rotate(-90 16 ' + (M.t+ph/2) + ')'}, yAxisLabel(c.ymode));
+  svg.appendChild(ylab);
+
+  /* curves */
+  series.forEach(function(se){
+    var d = '';
+    for (i = 0; i < xs.length; i++) d += (i ? 'L' : 'M') + X(xs[i]).toFixed(2) + ' ' + Y(se.ys[i]).toFixed(2);
+    var attrs = {d:d, fill:'none', stroke:se.color, 'stroke-width':2,
+      'stroke-linejoin':'round', 'stroke-linecap':'round'};
+    if (se.pol.dash) attrs['stroke-dasharray'] = se.pol.dash;
+    svg.appendChild(el('path', attrs));
+  });
+
+  /* direct labels on the right, for the first enabled polarisation of each sample */
+  if (M.r > 40 && c.pols.length){
+    var prim = c.pols[0].id;
+    var labels = series.filter(function(se){ return se.pol.id === prim; }).map(function(se){
+      return {y:Y(se.ys[se.ys.length-1]), text:se.sample.name, color:se.color};
+    }).sort(function(A,B){ return A.y - B.y; });
+    for (i = 1; i < labels.length; i++)
+      if (labels[i].y - labels[i-1].y < 17) labels[i].y = labels[i-1].y + 17;
+    var over = labels.length ? labels[labels.length-1].y - (M.t + ph) : 0;
+    if (over > 0) labels.forEach(function(L){ L.y -= over; });
+    labels.forEach(function(L){
+      svg.appendChild(el('line', {x1:M.l+pw+4, x2:M.l+pw+16, y1:L.y, y2:L.y, stroke:L.color, 'stroke-width':2.5}));
+      svg.appendChild(el('text', {x:M.l+pw+22, y:L.y+4, fill:cssVar('--ink'), 'font-size':13}, L.text));
+    });
+  }
+
+  /* hover layer */
+  var hover = el('g', {id:'hoverlayer'});
+  svg.appendChild(hover);
+  svg.appendChild(el('rect', {x:M.l, y:M.t, width:pw, height:ph, fill:'transparent', id:'hitrect'}));
+
+  document.getElementById('chartsub').textContent =
+    'λ = ' + c.lambda + ' nm · n₀ = ' + c.n0 + ' · n_sub = ' + c.nsub +
+    (c.bulk ? ' · semi-infinite bulk' : ' · coherent film') +
+    ' · ψ ' + c.a0 + '° · φ ' + c.phi + '° · γ ' + c.gam + '°';
+  document.getElementById('charttitle').textContent = chartTitle(c.ymode);
+  drawLegend(c);
+  bindHover(svg);
+}
+
+function yAxisLabel(m){
+  return m === 'R' ? 'Reflectance R' : m === 'T' ? 'Transmittance T' :
+         m === 'wp' ? 'p-fraction of the beam, w_p' :
+         m === 'Acos' ? 'Excitation density A·cos θ (normalised)' : 'Absorptance A = 1 − R − T';
+}
+function chartTitle(m){
+  return m === 'R' ? 'Reflectance across the tilt range' :
+         m === 'T' ? 'Transmittance across the tilt range' :
+         m === 'wp' ? 'How the beam splits into s and p across the tilt range' :
+         m === 'Acos' ? 'Energy absorbed per unit sample area across the tilt range' :
+         'Absorptance across the tilt range';
+}
+
+function drawLegend(c){
+  var lg = document.getElementById('legend');
+  lg.innerHTML = '';
+  if (c.ymode === 'wp'){
+    var w = document.createElement('div'); w.className = 'lgi';
+    w.textContent = 'w_p depends only on ψ, φ, γ and the tilt — it is the same for every sample';
+    lg.appendChild(w);
+    return;
+  }
+  visible().forEach(function(s){
+    var d = document.createElement('div'); d.className = 'lgi';
+    d.innerHTML = '<span class="key" style="background:' + colorOf(s) + '"></span>' + s.name;
+    lg.appendChild(d);
+  });
+  if (visible().length) {
+    var sep = document.createElement('div'); sep.className = 'lgi';
+    sep.style.color = 'var(--muted)'; sep.textContent = '|'; lg.appendChild(sep);
+  }
+  c.pols.forEach(function(p){
+    var d = document.createElement('div'); d.className = 'lgi';
+    d.innerHTML = keySvg(cssVar('--ink-2'), p.dash) + p.label;
+    lg.appendChild(d);
+  });
+}
+
+function bindHover(svg){
+  var tip = document.getElementById('tip');
+  var card = document.getElementById('chartcard');
+  function move(ev){
+    if (!geom) return;
+    var r = svg.getBoundingClientRect();
+    var px = ev.clientX - r.left;
+    var g = geom;
+    if (px < g.M.l - 4 || px > g.M.l + g.pw + 4){ leave(); return; }
+    var a = g.x0 + (px - g.M.l) / g.pw * (g.x1 - g.x0);
+    var idx = Math.max(0, Math.min(g.xs.length - 1,
+      Math.round((a - g.x0) / (g.x1 - g.x0) * (g.xs.length - 1))));
+    var ax = g.xs[idx];
+    var layer = svg.querySelector('#hoverlayer');
+    while (layer.firstChild) layer.removeChild(layer.firstChild);
+    layer.appendChild(el('line', {x1:g.X(ax), x2:g.X(ax), y1:g.M.t, y2:g.M.t + g.ph,
+      stroke:cssVar('--ink-2'), 'stroke-width':1}));
+    var rows = '';
+    g.series.forEach(function(se){
+      var v = se.ys[idx];
+      layer.appendChild(el('circle', {cx:g.X(ax), cy:g.Y(v), r:4.5, fill:se.color,
+        stroke:cssVar('--surface'), 'stroke-width':2}));
+      rows += '<div class="tr"><span class="nm">' + keySvg(se.color, se.pol.dash, 18) +
+              se.sample.name + ' · ' + se.pol.label + '</span><span class="v">' +
+              v.toFixed(3) + '</span></div>';
+    });
+    var gi = incidence(g.c, ax);
+    tip.innerHTML = '<div class="th">tilt ' + ax.toFixed(1) + '° · incidence ' + gi.th.toFixed(1) + '°' +
+      (gi.back ? ' (back face)' : '') + ' · footprint ×' +
+      (1 / Math.cos(gi.th * Math.PI/180)).toFixed(2) +
+      '<br>beam: ' + Math.round(gi.wp * 100) + '% p / ' + Math.round(gi.ws * 100) + '% s</div>' + rows;
+    tip.style.opacity = 1;
+    var cr = card.getBoundingClientRect();
+    var tx = ev.clientX - cr.left + 18;
+    if (tx + tip.offsetWidth > cr.width - 8) tx = ev.clientX - cr.left - tip.offsetWidth - 18;
+    tip.style.left = tx + 'px';
+    tip.style.top = Math.min(ev.clientY - cr.top + 12, cr.height - tip.offsetHeight - 8) + 'px';
+    drawSchematic(ax);
+  }
+  function leave(){
+    drawSchematic();
+    tip.style.opacity = 0;
+    var layer = svg.querySelector('#hoverlayer');
+    if (layer) while (layer.firstChild) layer.removeChild(layer.firstChild);
+  }
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('mouseleave', leave);
+}
+
+/* ---------------- sample table ---------------- */
+function num(v, dp){ return (Math.round(v * Math.pow(10,dp)) / Math.pow(10,dp)).toFixed(dp); }
+
+function drawTable(){
+  var c = cfg();
+  var tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  state.samples.forEach(function(s){
+    var e = nkToEps(s.n, s.k);
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="l"><input type="checkbox" data-f="on" ' + (s.on ? 'checked' : '') + '></td>' +
+      '<td class="l"><div class="sname"><span class="key" style="background:' + colorOf(s) + '"></span>' +
+        '<div><input type="text" data-f="name" value="' + s.name.replace(/"/g,'&quot;') + '">' +
+        '<div class="snote">' + s.note + '</div></div></div></td>' +
+      '<td><input type="number" step="0.01" data-f="e1" value="' + num(e.e1,3) + '"></td>' +
+      '<td><input type="number" step="0.01" data-f="e2" value="' + num(e.e2,3) + '"></td>' +
+      '<td><input type="number" step="0.01" min="0" data-f="n" value="' + num(s.n,3) + '"></td>' +
+      '<td><input type="number" step="0.01" min="0" data-f="k" value="' + num(s.k,3) + '"></td>' +
+      '<td><input type="number" step="5" min="1" data-f="d" value="' + s.d + '"></td>' +
+      '<td class="mono">' + valueAt(s, c, 'avg', c.a0).toFixed(3) + '</td>' +
+      '<td class="mono">' + valueAt(s, c, 'avg', c.a0 + 45).toFixed(3) + '</td>' +
+      '<td><button class="del" title="remove">✕</button></td>';
+    tr.querySelectorAll('input').forEach(function(inp){
+      inp.addEventListener(inp.type === 'checkbox' ? 'change' : 'input', function(){
+        var f = inp.dataset.f;
+        if (f === 'on'){ s.on = inp.checked; if (s.on) ensureSlot(s); }
+        else if (f === 'name'){ s.name = inp.value; }
+        else if (f === 'd'){ s.d = Math.max(0.1, +inp.value || 1); }
+        else if (f === 'n' || f === 'k'){
+          s[f] = Math.max(0, +inp.value || 0);
+        } else {
+          var row = inp.closest('tr');
+          var e1 = +row.querySelector('[data-f=e1]').value;
+          var e2 = +row.querySelector('[data-f=e2]').value;
+          var nk = epsToNk(e1, Math.max(0, e2));
+          s.n = nk.n; s.k = nk.k;
+        }
+        refresh(f === 'name' || f === 'd' || f === 'on' ? true : false, inp);
+      });
+    });
+    tr.querySelector('.del').addEventListener('click', function(){
+      state.samples = state.samples.filter(function(x){ return x.id !== s.id; });
+      refresh(true);
+    });
+    tb.appendChild(tr);
+  });
+}
+
+/* live-update numbers that are not the field being typed in */
+function syncRow(active){
+  var c = cfg();
+  document.querySelectorAll('#tbody tr').forEach(function(tr, i){
+    var s = state.samples[i];
+    if (!s) return;
+    var e = nkToEps(s.n, s.k);
+    var set = function(f, val){
+      var inp = tr.querySelector('[data-f=' + f + ']');
+      if (inp && inp !== active) inp.value = val;
+    };
+    set('e1', num(e.e1,3)); set('e2', num(e.e2,3));
+    set('n', num(s.n,3)); set('k', num(s.k,3));
+    var tds = tr.querySelectorAll('td.mono');
+    tds[0].textContent = valueAt(s, c, 'avg', c.a0).toFixed(3);
+    tds[1].textContent = valueAt(s, c, 'avg', c.a0 + 45).toFixed(3);
+  });
+}
+
+/* ---------------- data table ---------------- */
+function drawDataTable(){
+  var c = cfg();
+  var head = document.getElementById('dthead'), body = document.getElementById('dtbody');
+  var cols = [];
+  visible().forEach(function(s){ c.pols.forEach(function(p){ cols.push({s:s, p:p}); }); });
+  head.innerHTML = '<tr><th class="l">Tilt</th>' + cols.map(function(col){
+    return '<th>' + col.s.name + ' · ' + col.p.label + '</th>'; }).join('') + '</tr>';
+  var lo = Math.ceil(c.amin / 5) * 5, rows = '';
+  for (var a = lo; a <= c.amax + 0.001; a += 5){
+    rows += '<tr><td class="l mono">' + a + '°</td>' + cols.map(function(col){
+      return '<td class="mono">' + valueAt(col.s, c, col.p.id, a).toFixed(4) + '</td>'; }).join('') + '</tr>';
+  }
+  body.innerHTML = rows;
+}
+
+/* ---------------- csv ---------------- */
+function exportCSV(){
+  var c = cfg();
+  var cols = [];
+  visible().forEach(function(s){ c.pols.forEach(function(p){ cols.push({s:s, p:p}); }); });
+  var lines = [];
+  lines.push('# ' + yAxisLabel(c.ymode) + ' vs tilt angle');
+  lines.push('# lambda_nm=' + c.lambda + ', n0=' + c.n0 + ', n_sub=' + c.nsub +
+             ', psi_deg=' + c.a0 + ', phi_deg=' + c.phi + ', gamma_deg=' + c.gam +
+             ', tilt_from=' + c.amin + ', tilt_to=' + c.amax + ', model=' + (c.bulk ? 'semi-infinite' : 'coherent film'));
+  visible().forEach(function(s){
+    var e = nkToEps(s.n, s.k);
+    lines.push('# ' + s.name + ': n=' + num(s.n,4) + ', k=' + num(s.k,4) +
+               ', eps1=' + num(e.e1,4) + ', eps2=' + num(e.e2,4) + ', d_nm=' + s.d);
+  });
+  lines.push(['tilt_deg','incidence_deg','w_p'].concat(cols.map(function(col){
+    return col.s.name + '|' + col.p.id; })).join(','));
+  var lo = Math.ceil(c.amin);
+  for (var a = lo; a <= c.amax + 0.001; a += 1){
+    var gi = incidence(c, a);
+    lines.push([a, gi.th.toFixed(1), gi.wp.toFixed(4)].concat(cols.map(function(col){
+      return valueAt(col.s, c, col.p.id, a).toFixed(5); })).join(','));
+  }
+  var blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a2 = document.createElement('a');
+  a2.href = url; a2.download = 'absorptance_vs_tilt.csv';
+  document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+
+/* ---------------- schematic ---------------- */
+var GEO = {az:30, el:20, scale:104, cx:202, cy:170};
+
+function proj(p){
+  var D = Math.PI/180;
+  var ca = Math.cos(GEO.az*D), sa = Math.sin(GEO.az*D);
+  var ce = Math.cos(GEO.el*D), se = Math.sin(GEO.el*D);
+  var x1 =  p[0]*ca + p[1]*sa;
+  var y1 = -p[0]*sa + p[1]*ca;
+  var z2 = -y1*se + p[2]*ce;
+  return [GEO.cx + x1*GEO.scale, GEO.cy - z2*GEO.scale];
+}
+function vscale(v, k){ return [v[0]*k, v[1]*k, v[2]*k]; }
+function vadd(a, b){ return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
+
+function gLine(g, a, b, color, w, dash, op){
+  var A = proj(a), B = proj(b);
+  var at = {x1:A[0], y1:A[1], x2:B[0], y2:B[1], stroke:color, 'stroke-width':w,
+            'stroke-linecap':'round'};
+  if (dash) at['stroke-dasharray'] = dash;
+  if (op !== undefined) at['opacity'] = op;
+  g.appendChild(el('line', at));
+}
+function gHead(g, from, to, color, size){
+  var A = proj(from), B = proj(to);
+  var dx = B[0]-A[0], dy = B[1]-A[1], m = Math.hypot(dx, dy) || 1;
+  dx /= m; dy /= m;
+  var s = size || 9, w = s * 0.42;
+  var p1 = [B[0], B[1]];
+  var p2 = [B[0] - dx*s - dy*w, B[1] - dy*s + dx*w];
+  var p3 = [B[0] - dx*s + dy*w, B[1] - dy*s - dx*w];
+  g.appendChild(el('polygon', {points:p1.join(',')+' '+p2.join(',')+' '+p3.join(','), fill:color}));
+}
+function gArrow(g, from, to, color, w, dash){
+  gLine(g, from, to, color, w, dash);
+  gHead(g, from, to, color);
+}
+function gText(g, p3, txt, color, dx, dy, italic){
+  var P = proj(p3);
+  var x = Math.max(6, Math.min(462 - txt.length*7, P[0] + (dx||0)));
+  var y = Math.max(15, Math.min(351, P[1] + (dy||0)));
+  var at = {x:x, y:y, fill:color, 'font-size':13, 'font-family':'var(--f-body)'};
+  if (italic) at['font-style'] = 'italic';
+  g.appendChild(el('text', at, txt));
+}
+
+function drawSchematic(alphaOverride){
+  var svg = document.getElementById('geo');
+  if (!svg) return;
+  var c = cfg();
+  var sl = document.getElementById('aview');
+  sl.min = c.amin; sl.max = c.amax;
+  if (+sl.value < c.amin) sl.value = c.amin;
+  if (+sl.value > c.amax) sl.value = c.amax;
+  var a = (alphaOverride === undefined || alphaOverride === null) ? +sl.value : alphaOverride;
+  a = Math.max(c.amin, Math.min(c.amax, a));
+  document.getElementById('aviewv').textContent = a.toFixed(0) + '°';
+
+  var g = beamGeometry(c.a0, c.phi, c.gam, a);
+  var D = Math.PI/180, al = a*D;
+  var ea = [1, 0, 0];                                   /* tilt axis, in the sample plane */
+  var eb = [0, Math.cos(al), Math.sin(al)];             /* the other in-plane direction */
+  var nrm = g.n;
+
+  var ink = cssVar('--ink'), ink2 = cssVar('--ink-2'), muted = cssVar('--muted');
+  var cAxis = cssVar('--geo-axis'), cDisk = cssVar('--geo-disk'),
+      cBeam = cssVar('--geo-beam'), cPol = cssVar('--geo-pol');
+
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  /* disk outline, used both as a shape and as a clip for the footprint */
+  var R = 1.0, pts = [], i, t;
+  for (i = 0; i <= 72; i++){
+    t = i / 72 * 2 * Math.PI;
+    var q = vadd(vscale(ea, R*Math.cos(t)), vscale(eb, R*Math.sin(t)));
+    pts.push(proj(q).map(function(v){ return v.toFixed(1); }).join(','));
+  }
+  var diskPts = pts.join(' ');
+  var defs = el('defs', {});
+  var cp = el('clipPath', {id:'diskclip'});
+  cp.appendChild(el('polygon', {points:diskPts}));
+  defs.appendChild(cp);
+  svg.appendChild(defs);
+
+  /* electron optical axis */
+  gLine(svg, [0,0,1.75], [0,0,-1.3], muted, 1.2, '4 4', 0.85);
+  gHead(svg, [0,0,1.0], [0,0,0.13], muted, 8);
+  gText(svg, [0,0,-1.3], 'electron beam', muted, -34, 16);
+
+  var beamTail = vscale(g.u, 1.9), beamTip = vscale(g.u, 0.1);
+  var drawBeam = function(){
+    gArrow(svg, beamTail, beamTip, cBeam, 2.2);
+    gText(svg, beamTail, 'pump beam', cBeam, 10, -6);
+    /* polarisation: a line, not an arrow, so both ends carry a head */
+    var mid = vscale(g.u, 0.92), half = vscale(g.e, 0.4);
+    var pA = vadd(mid, half), pB = vadd(mid, vscale(half, -1));
+    gLine(svg, pA, pB, cPol, 2.8);
+    gHead(svg, mid, pA, cPol, 8); gHead(svg, mid, pB, cPol, 8);
+    gText(svg, pA, 'E (γ)', cPol, 7, -3);
+  };
+
+  if (g.back) drawBeam();                       /* beam passes behind the sample */
+
+  /* the sample disk */
+  svg.appendChild(el('polygon', {points:diskPts, fill:cDisk, 'fill-opacity':0.16,
+    stroke:cDisk, 'stroke-width':1.4, 'stroke-opacity':0.75}));
+
+  /* beam footprint on the sample: rho across, rho/cos(theta) along the plane of incidence */
+  {
+    var tin = null, across = g.s;
+    if (g.s){
+      tin = v3norm([g.u[0] - Math.cos(g.th)*(g.back ? -1 : 1)*nrm[0],
+                    g.u[1] - Math.cos(g.th)*(g.back ? -1 : 1)*nrm[1],
+                    g.u[2] - Math.cos(g.th)*(g.back ? -1 : 1)*nrm[2]]);
+    } else {                                   /* normal incidence: a circular spot */
+      across = ea; tin = eb;
+    }
+    if (tin && across){
+      var rho = 0.34, stretch = Math.min(1/Math.max(Math.cos(g.th), 0.08), 9);
+      var fp = [];
+      for (i = 0; i <= 64; i++){
+        t = i / 64 * 2 * Math.PI;
+        var f = vadd(vscale(across, rho*Math.cos(t)), vscale(tin, rho*stretch*Math.sin(t)));
+        fp.push(proj(f).map(function(v){ return v.toFixed(1); }).join(','));
+      }
+      svg.appendChild(el('polygon', {points:fp.join(' '), fill:cPol, 'fill-opacity':0.20,
+        stroke:cPol, 'stroke-width':1, 'stroke-opacity':0.55, 'stroke-dasharray':'3 3',
+        'clip-path':'url(#diskclip)'}));
+    }
+  }
+
+  /* the tilt axis, fixed in the lab, drawn on the sample */
+  gLine(svg, [-1.16,0,0], [1.16,0,0], cAxis, 2.6);
+  gText(svg, [1.16,0,0], 'α tilt axis', cAxis, 8, 4);
+
+  /* surface normal */
+  gArrow(svg, [0,0,0], vscale(nrm, 1.15), ink2, 1.5, '5 3');
+  gText(svg, vscale(nrm, 1.15), 'n', ink2, 7, -2, true);
+
+  /* s and p directions */
+  if (g.s){
+    gArrow(svg, [0,0,0], vscale(g.s, 0.62), muted, 1.4);
+    gText(svg, vscale(g.s, 0.62), 's', muted, 6, 12, true);
+    gArrow(svg, [0,0,0], vscale(g.p, 0.62), muted, 1.4);
+    gText(svg, vscale(g.p, 0.62), 'p', muted, 6, -4, true);
+  }
+
+  if (!g.back) drawBeam();
+
+  /* live numbers beside the figure */
+  var thd = g.th * 180 / Math.PI;
+  var stats = [
+    ['Angle of incidence θ', thd.toFixed(1) + '°'],
+    ['Beam split', Math.round(g.wp*100) + '% p / ' + Math.round(g.ws*100) + '% s'],
+    ['Footprint', '×' + (1/Math.max(Math.cos(g.th), 1e-6)).toFixed(2)]
+  ];
+  if (g.back) stats.push(['Illuminated face', 'rear']);
+  document.getElementById('geostats').innerHTML = stats.map(function(r){
+    return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('');
+  document.getElementById('geosub').textContent =
+    'ψ ' + c.a0 + '° · φ ' + c.phi + '° · γ ' + c.gam + '° · α ' + a.toFixed(0) + '°';
+}
+
+/* ---------------- wiring ---------------- */
+function refresh(rebuildTable, active){
+  labelBeam();
+  drawChart();
+  drawSchematic();
+  if (rebuildTable) drawTable(); else syncRow(active);
+  drawDataTable();
+}
+
+['lam','n0','nsub','a0','phi','gam','ymode','polb','polp','pols','pola','bulk','amin','amax'].forEach(function(id){
+  var e = document.getElementById(id);
+  e.addEventListener(e.tagName === 'SELECT' || e.type === 'checkbox' ? 'change' : 'input', function(){ refresh(false); });
+});
+document.getElementById('subpick').addEventListener('change', function(){
+  document.getElementById('nsub').value = this.value;
+  document.getElementById('subhint').textContent =
+    this.value === '1' ? 'free-standing, vacuum behind'
+                       : this.options[this.selectedIndex].text.split(' ')[0] + ' behind the film';
+  refresh(false);
+});
+document.getElementById('add').addEventListener('click', function(){
+  var used = {};
+  state.samples.filter(function(s){ return s.on; }).forEach(function(s){ used[s.slot] = 1; });
+  var slot = 0; for (var i = 0; i < 8; i++) if (!used[i]){ slot = i; break; }
+  state.samples.push(mkSample({name:'New sample ' + (state.samples.length + 1), note:'custom', n:2.5, k:0.5, d:60, on:true}, slot));
+  refresh(true);
+});
+document.getElementById('reset').addEventListener('click', function(){
+  document.getElementById('lam').value = 800;
+  document.getElementById('n0').value = 1;
+  document.getElementById('nsub').value = 1;
+  document.getElementById('a0').value = 0;
+  document.getElementById('phi').value = 0;
+  document.getElementById('gam').value = 0;
+  document.getElementById('ymode').value = 'A';
+  document.getElementById('polb').checked = true;
+  document.getElementById('polp').checked = false;
+  document.getElementById('pols').checked = false;
+  document.getElementById('pola').checked = false;
+  document.getElementById('bulk').checked = false;
+  document.getElementById('amin').value = -80;
+  document.getElementById('amax').value = 80;
+  resetSamples();
+  refresh(true);
+});
+document.getElementById('aview').addEventListener('input', function(){ drawSchematic(); });
+document.getElementById('csv').addEventListener('click', exportCSV);
+window.addEventListener('resize', function(){ drawChart(); });
+if (window.matchMedia) {
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', function(){ refresh(true); });
+}
+
+document.querySelectorAll('.check .pk').forEach(function(sp){
+  sp.outerHTML = keySvg(cssVar('--ink-2'), sp.dataset.dash, 26);
+});
+document.getElementById('gen').textContent = new Date().toISOString().slice(0,10);
+resetSamples();
+refresh(true);
+</script>
+</body>
+</html>

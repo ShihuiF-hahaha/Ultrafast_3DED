@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intensity Decay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Karla:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --plane:     #f2f4f7;
+  --surface:   #fdfdfe;
+  --surface-2: #f7f8fa;
+  --ink:       #0e1116;
+  --ink-2:     #555c66;
+  --muted:     #868d97;
+  --hairline:  #e2e5ea;
+  --rule:      #ccd2da;
+  --geom:      #2a78d6;
+  --geom-soft: rgba(42,120,214,0.14);
+  --adp:       #138a76;
+  --disp:      #7a4fc9;
+  --qual:      #eb6834;
+  --down:      #d03b3b;
+  --shadow:    0 1px 2px rgba(14,17,22,0.06), 0 8px 24px -16px rgba(14,17,22,0.28);
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --s5: #e87ba4;
+  --s6: #008300;
+  --s7: #4a3aa7;
+  --s8: #e34948;
+  --sans:    "Karla", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Archivo", system-ui, sans-serif;
+  --mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --plane: #0c0e12; --surface: #171a1f; --surface-2: #1e2228;
+    --ink: #ffffff; --ink-2: #bcc2cb; --muted: #868d97;
+    --hairline: #282c33; --rule: #3a3f47;
+    --geom: #3987e5; --geom-soft: rgba(57,135,229,0.18);
+    --adp: #25a892; --disp: #9a74e0; --qual: #d95926;
+    --down: #e06a6a; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --shadow: 0 1px 2px rgba(0,0,0,0.5), 0 8px 24px -16px rgba(0,0,0,0.8);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plane: #0c0e12; --surface: #171a1f; --surface-2: #1e2228;
+  --ink: #ffffff; --ink-2: #bcc2cb; --muted: #868d97;
+  --hairline: #282c33; --rule: #3a3f47;
+  --geom: #3987e5; --geom-soft: rgba(57,135,229,0.18);
+  --adp: #25a892; --disp: #9a74e0; --qual: #d95926;
+  --down: #e06a6a; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --shadow: 0 1px 2px rgba(0,0,0,0.5), 0 8px 24px -16px rgba(0,0,0,0.8);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--plane); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1180px; margin: 0 auto; padding: 40px 28px 96px; }
+@media (max-width: 600px) { .wrap { padding: 28px 16px 72px; } }
+
+.masthead { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 18px 32px; padding-bottom: 22px; border-bottom: 1px solid var(--rule); }
+h1 { font-family: var(--display); font-weight: 700; font-size: 46px; line-height: 1.06; letter-spacing: -0.022em; margin: 0; text-wrap: balance; flex: 1 1 320px; }
+@media (max-width: 600px) { h1 { font-size: 34px; } }
+.dek { flex: 1 1 320px; max-width: 56ch; color: var(--ink-2); font-size: 15.5px; margin: 0 0 4px; }
+
+/* ---------- source panel ---------- */
+.source { margin-top: 22px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; box-shadow: var(--shadow); padding: 14px 16px; }
+.source.drag { border-color: var(--geom); background: var(--geom-soft); }
+.source-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.source-row + .source-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+.filebtn { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 13.5px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 7px; padding: 7px 14px; cursor: pointer; white-space: nowrap; }
+.filebtn:hover { border-color: var(--ink-2); }
+.filebtn:disabled { color: var(--muted); cursor: default; border-color: var(--hairline); }
+.filebtn:focus-visible, select:focus-visible, input:focus-visible, .ghost:focus-visible, .xbtn:focus-visible { outline: 2px solid var(--geom); outline-offset: 2px; }
+.ghost { font-family: var(--sans); font-size: 13.5px; color: var(--ink-2); background: none; border: none; border-bottom: 1px solid var(--rule); padding: 2px 0; cursor: pointer; white-space: nowrap; }
+.ghost:hover { color: var(--ink); border-color: var(--ink); }
+.srcname { font-family: var(--mono); font-size: 13.5px; color: var(--ink); }
+.srcmeta { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+.spacer { flex: 1 1 auto; }
+label.fld { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+select, input[type=number], input[type=text] { font-family: var(--mono); font-size: 13.5px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 7px; padding: 6px 9px; max-width: 100%; }
+select { font-family: var(--sans); }
+input[type=number] { width: 92px; }
+input[type=text].unit { width: 58px; }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+.toggles label { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--ink-2); cursor: pointer; }
+.toggles input { accent-color: var(--geom); width: 15px; height: 15px; }
+.err { color: var(--down); font-size: 13.5px; margin: 10px 0 0; white-space: pre-line; }
+.drophint { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+.drophint code { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+
+/* ---------- headline figures ---------- */
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; margin-top: 22px; }
+@media (max-width: 720px) { .strip { grid-template-columns: repeat(2, 1fr); } }
+.stat { background: var(--surface); padding: 13px 16px 14px; min-width: 0; }
+.stat .k { font-size: 12.5px; color: var(--muted); }
+.stat .v { font-family: var(--mono); font-weight: 500; font-size: 24px; letter-spacing: -0.02em; line-height: 1.3; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat .v.flat { color: var(--muted); }
+.stat .s { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- sections ---------- */
+section { margin-top: 42px; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 6px; }
+.sec-head h2 { font-family: var(--display); font-size: 30px; font-weight: 600; letter-spacing: -0.018em; margin: 0; }
+.sec-head .tag { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+.sec-note { color: var(--ink-2); font-size: 15px; max-width: 74ch; margin: 0 0 18px; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid:empty { display: none; }
+.empty-note { color: var(--muted); font-size: 14px; margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; box-shadow: var(--shadow); padding: 14px 14px 8px; min-width: 0; }
+.card-head { display: flex; align-items: center; gap: 8px; }
+.card h3 { font-family: var(--display); font-size: 16.5px; font-weight: 600; margin: 0; letter-spacing: -0.005em; flex: 1 1 auto; min-width: 0; }
+.card h3 .u { font-family: var(--mono); font-weight: 400; font-size: 13px; color: var(--muted); }
+.card input.name { font-family: var(--display); font-size: 16.5px; font-weight: 600; color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 1px 5px; margin-left: -6px; width: 100%; min-width: 0; }
+.card input.name:hover { border-color: var(--hairline); }
+.card input.name:focus { border-color: var(--rule); background: var(--surface-2); }
+.xbtn { flex: none; font-size: 17px; line-height: 1; color: var(--muted); background: none; border: none; padding: 2px 4px; cursor: pointer; border-radius: 5px; }
+.xbtn:hover { color: var(--down); background: var(--surface-2); }
+.card .sub { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); margin: 2px 0 4px; }
+.card .sub .dim { color: var(--muted); }
+.card .cap { font-size: 13.5px; color: var(--ink-2); margin: 2px 0 8px; max-width: 90ch; }
+.card svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* ---------- control bars ---------- */
+.bar { display: flex; flex-direction: column; gap: 12px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; box-shadow: var(--shadow); padding: 13px 14px; margin-bottom: 14px; }
+.barrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.barrow + .barrow { padding-top: 12px; border-top: 1px solid var(--hairline); }
+.barlbl { font-size: 13.5px; color: var(--ink-2); }
+.bar .hint { font-size: 13px; color: var(--muted); margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 20px; padding: 3px 11px 3px 8px; cursor: pointer; }
+.chip input, .barrow input[type=checkbox] { accent-color: var(--geom); width: 15px; height: 15px; margin: 0; }
+.chipgroup { font-size: 12.5px; color: var(--muted); align-self: center; margin-left: 4px; }
+.chipgroup:first-child { margin-left: 0; }
+
+/* neighbour picker */
+.nbwrap { max-height: 300px; overflow: auto; border: 1px solid var(--hairline); border-radius: 8px; }
+.nbtable { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.nbtable th, .nbtable td { padding: 5px 10px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--hairline); }
+.nbtable th { position: sticky; top: 0; background: var(--surface); font-family: var(--sans); font-weight: 500; font-size: 12.5px; color: var(--ink-2); }
+.nbtable td.num { text-align: right; }
+.nbtable td.dim { color: var(--muted); }
+.nbtable tr.have td { color: var(--muted); }
+.nbtable input { accent-color: var(--geom); width: 15px; height: 15px; vertical-align: -2px; }
+.nbtable .ghost { font-size: 12.5px; }
+
+/* ---------- table ---------- */
+.tablewrap { overflow-x: auto; max-height: 560px; overflow-y: auto; background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; box-shadow: var(--shadow); }
+#tbl { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+#tbl th, #tbl td { padding: 7px 11px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--hairline); }
+#tbl th { position: sticky; top: 0; z-index: 1; background: var(--surface); font-family: var(--sans); font-weight: 500; font-size: 12.5px; color: var(--ink-2); cursor: pointer; user-select: none; border-bottom: 1px solid var(--rule); }
+#tbl th:hover { color: var(--ink); }
+#tbl th.sorted::after { content: " \2193"; color: var(--muted); }
+#tbl th.sorted.asc::after { content: " \2191"; }
+#tbl td:first-child, #tbl th:first-child { text-align: left; }
+#tbl td.l, #tbl th.l { text-align: left; }
+#tbl tbody tr { cursor: pointer; }
+#tbl tbody tr:hover td { background: var(--surface-2); }
+#tbl tr.off td { color: var(--muted); }
+#tbl tr.nox td { color: var(--muted); }
+#tbl td.usecell, #tbl th.usecell { width: 1%; padding-right: 4px; }
+#tbl td.usecell input, #tbl th.usecell input { accent-color: var(--geom); width: 15px; height: 15px; vertical-align: -2px; }
+#tbl th.usecell { cursor: default; }
+#tbl td.note { color: var(--ink-2); font-family: var(--sans); font-size: 12.5px; text-align: left; white-space: normal; min-width: 180px; }
+.ft { letter-spacing: 0.04em; }
+.ft .no { color: var(--rule); }
+.basechip, .refchip { display: inline-block; font-family: var(--sans); font-size: 11px; line-height: 1.5; padding: 0 6px; margin-left: 6px; border-radius: 20px; border: 1px solid var(--geom); color: var(--geom); }
+.refchip { border-color: var(--ink-2); color: var(--ink-2); }
+
+.selbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; box-shadow: var(--shadow); padding: 11px 14px; margin-bottom: 12px; }
+.selbar input[type=text] { width: 180px; }
+.selbar + .selbar { margin-top: -4px; }
+.rg { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+.rg input[type=number] { width: 80px; }
+.rgnote { font-size: 12.5px; color: var(--ink-2); }
+.rgnote.bad { color: var(--down); }
+
+.figpaper { background: #ffffff; border: 1px solid var(--hairline); border-radius: 10px; box-shadow: var(--shadow); padding: 22px; overflow-x: auto; }
+.figpaper svg { display: block; margin: 0 auto; }
+.figempty { color: #6b6b6b; font-size: 14px; margin: 0; text-align: center; }
+.wide { grid-column: 1 / -1; }
+#tip { position: fixed; z-index: 50; pointer-events: none; opacity: 0; transition: opacity 90ms linear; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.35); padding: 9px 12px; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; white-space: nowrap; }
+#tip .tn { font-family: var(--display); font-size: 13.5px; font-weight: 600; display: block; margin-bottom: 3px; }
+#tip .lb { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { #tip { transition: none; } }
+.notes { max-width: 74ch; color: var(--ink-2); font-size: 15px; }
+.notes .sec-head h2 { color: var(--ink); }
+.notes h3 { font-family: var(--display); font-size: 18px; font-weight: 600; color: var(--ink); margin: 22px 0 4px; }
+.notes p { margin: 0 0 10px; }
+.notes code { font-family: var(--mono); font-size: 13px; }
+footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 2px; vertical-align: -1px; }
+#legend .chip { padding-right: 4px; }
+#sumtbl { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+#sumtbl th, #sumtbl td { padding: 7px 11px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--hairline); }
+#sumtbl th { background: var(--surface); font-family: var(--sans); font-weight: 500; font-size: 12.5px; color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+#sumtbl .l { text-align: left; }
+#sumtbl tr.off td { color: var(--muted); }
+#scalecard svg { max-height: 460px; }
+#tbl th.l, #tbl td.l { text-align: left; }
+#tbl tbody tr { cursor: default; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <h1>Intensity Decay</h1>
+    <p class="dek">Total integrated intensity of each dataset in acquisition order, with a fitted decay curve. When the falling intensity comes from a drop in electron flux, the fit also gives a correction factor that puts every dataset back on the scale of the first one.</p>
+  </header>
+
+  <div class="source" id="source">
+    <div class="source-row">
+      <button type="button" class="filebtn" id="pick">Load intensity file</button>
+      <div>
+        <div class="srcname" id="srcname"></div>
+        <div class="srcmeta" id="srcmeta"></div>
+      </div>
+      <span class="spacer"></span>
+      <label class="fld" for="model">Fit
+        <select id="model">
+          <option value="expc" selected>Exponential + offset</option>
+          <option value="exp">Exponential to zero</option>
+          <option value="lin">Straight line</option>
+          <option value="none">None</option>
+        </select></label>
+      <label class="fld" for="ymode">Y axis
+        <select id="ymode">
+          <option value="rel" selected>Relative to the first dataset</option>
+          <option value="abs">Total intensity (counts)</option>
+        </select></label>
+      <button type="button" class="ghost" id="reset">Sample data</button>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="t-line"> Connect points</label>
+      <label><input type="checkbox" id="t-plateau" checked> Plateau line</label>
+      <label><input type="checkbox" id="t-resid" checked> Residual panel</label>
+      <button type="button" class="ghost" id="incl-all">Include every point in the fit</button>
+    </div>
+    <p class="drophint">Two columns, tab, comma or space separated, header optional: a dataset name and its total intensity, e.g. <code>experiment_12&nbsp;&nbsp;22225658</code>. The number in the name sets the position on the x axis; without one the row order is used. Click a point to leave it out of the fit (it stays on the plot, hollow). The file can also be dropped onto this page.</p>
+    <p class="err" id="err" hidden></p>
+    <input type="file" id="file" accept=".txt,.csv,.tsv,.dat" hidden>
+  </div>
+
+  <div class="strip" id="strip"></div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Intensity against experiment</h2>
+      <span class="tag" id="fittag"></span>
+    </div>
+    <p class="sec-note" id="fitnote"></p>
+    <div class="grid"><div class="card wide" id="maincard"></div></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Correction factors</h2>
+      <span class="tag">fit(first) / fit(n)</span>
+    </div>
+    <p class="sec-note">Multiplying a dataset&rsquo;s intensities by its factor removes the fitted decay and puts it on the scale of the first experiment. Taken from the fitted curve rather than the raw sums, so the scatter of single datasets is not copied into the correction.</p>
+    <div class="tablewrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Figure export</h2>
+      <span class="tag">SVG vector &middot; PNG 600 dpi &middot; CSV</span>
+    </div>
+    <div class="bar">
+      <div class="barrow">
+        <label class="fld" for="fig-width">Width
+          <select id="fig-width">
+            <option value="8.5" selected>8.5 cm &middot; single column</option>
+            <option value="11.4">11.4 cm &middot; 1.5 column</option>
+            <option value="17.8">17.8 cm &middot; double column</option>
+          </select></label>
+        <label class="fld" for="fig-aspect">Panel shape
+          <select id="fig-aspect"><option value="0.5">Wide (0.5)</option><option value="0.62">0.62</option><option value="0.75" selected>4 : 3</option></select></label>
+        <label class="fld" for="fig-font">Font
+          <select id="fig-font"><option value="arial" selected>Arial</option><option value="helvetica">Helvetica</option><option value="times">Times New Roman</option></select></label>
+        <label class="fld" for="fig-fs">Size
+          <select id="fig-fs"><option value="6">6 pt</option><option value="7">7 pt</option><option value="8" selected>8 pt</option><option value="9">9 pt</option></select></label>
+        <label class="fld"><input type="checkbox" id="fig-eq" checked> Fit result in the figure</label>
+      </div>
+      <div class="barrow">
+        <button type="button" class="filebtn" id="fig-svg">Download SVG</button>
+        <button type="button" class="filebtn" id="fig-png">Download PNG (600 dpi)</button>
+        <button type="button" class="filebtn" id="csv">Download CSV</button>
+        <span class="srcmeta" id="figmeta"></span>
+      </div>
+    </div>
+    <div class="figpaper"><div id="figpreview"></div></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+<script>
+const SAMPLE = "Dataset\tTotal_Intensity\nexperiment_1\t24464890\nexperiment_2\t24156226\nexperiment_3\t23987745\nexperiment_4\t24122102\nexperiment_5\t23877963\nexperiment_6\t23412759\nexperiment_7\t23665050\nexperiment_8\t23669913\nexperiment_9\t22958002\nexperiment_10\t22584748\nexperiment_11\t22708760\nexperiment_12\t22225658\nexperiment_13\t22352366\nexperiment_14\t22347230\nexperiment_15\t22327713\nexperiment_16\t21986142\nexperiment_17\t21815474\nexperiment_18\t21800544\nexperiment_19\t21683940\nexperiment_20\t21604612\nexperiment_21\t21380276\nexperiment_22\t21458617\nexperiment_23\t21519068\nexperiment_24\t21562175\nexperiment_25\t21547715\nexperiment_26\t21316186\nexperiment_27\t21339165\nexperiment_28\t21269030\nexperiment_29\t21343096\nexperiment_30\t21222399\nexperiment_31\t21226422\nexperiment_32\t21088985\nexperiment_33\t21140509\nexperiment_34\t21161074\nexperiment_35\t21148903\nexperiment_36\t21043513\nexperiment_37\t21313446\nexperiment_38\t21131277\nexperiment_39\t21256429\nexperiment_40\t21001047\nexperiment_41\t21006239\nexperiment_42\t21049234\nexperiment_43\t20979034\nexperiment_44\t20988606\nexperiment_45\t21063286\nexperiment_46\t20857195\nexperiment_47\t20774899\nexperiment_48\t20843734\nexperiment_49\t20803936\n";
+</script>
+<script>
+(function () {
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/* ============ helpers ============ */
+const fmt = (v, d) => (v == null || !isFinite(v)) ? "—" : v.toFixed(d);
+function niceTicks(lo, hi, n, integer) {
+  const span = (hi - lo) || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / n)));
+  const norm = (span / n) / step;
+  step *= norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+  if (integer) step = Math.max(1, Math.round(step));
+  const out = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-6; v += step) out.push(+v.toFixed(10));
+  return out;
+}
+function tickDec(step) {
+  let d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+  while (d < 8 && Math.abs(step * Math.pow(10, d) - Math.round(step * Math.pow(10, d))) > 1e-6) d++;
+  return d;
+}
+const fmtTick = (v, d, step) => { if (Math.abs(v) < step * 1e-6) v = 0; return (v < 0 ? "−" : "") + Math.abs(v).toFixed(d); };
+const textW = (s, fs) => String(s).length * fs * 0.56;
+function minorTicks(ticks, step, lo, hi, integer) {
+  const h = step / 2;
+  if (!ticks.length || (integer && h % 1)) return [];
+  const out = [];
+  for (let v = ticks[0] - h; v <= hi + 1e-12; v += step) if (v >= lo && v <= hi) out.push(v);
+  return out;
+}
+/* counts with a power-of-ten factor pulled into the axis title */
+function sciScale(maxAbs) { const e = Math.floor(Math.log10(maxAbs || 1)); return e >= 4 ? e : 0; }
+
+/* ============ parsing ============ */
+function parseSums(text) {
+  const rows = [];
+  String(text).split(/\r?\n/).forEach((line, k) => {
+    const s = line.trim();
+    if (!s || /^[#;]/.test(s)) return;
+    const parts = s.split(/[\t,;]+|\s{1,}/).filter(Boolean);
+    if (parts.length < 2) return;
+    const v = parseFloat(parts[parts.length - 1]);
+    if (!isFinite(v)) return;                                   // header line
+    const name = parts.slice(0, parts.length - 1).join(" ");
+    const m = name.match(/(\d+)(?!.*\d)/);
+    rows.push({ name: name, n: m ? parseInt(m[1], 10) : NaN, I: v, out: false });
+  });
+  if (!rows.length) throw new Error("no lines with a name and a number");
+  if (rows.some(r => !isFinite(r.n)) || new Set(rows.map(r => r.n)).size !== rows.length) rows.forEach((r, i) => { r.n = i + 1; });
+  rows.sort((a, b) => a.n - b.n);
+  return rows;
+}
+
+/* ============ fitting ============ */
+function linLS(cols, y) {   // least squares for y ≈ sum_j b_j cols_j (2 columns max)
+  const m = cols.length;
+  if (m === 1) { const a = cols[0]; let num = 0, den = 0; a.forEach((v, i) => { num += v * y[i]; den += v * v; }); return [num / den]; }
+  const [a, b] = cols;
+  let aa = 0, ab = 0, bb = 0, ay = 0, by = 0;
+  a.forEach((v, i) => { aa += v * v; ab += v * b[i]; bb += b[i] * b[i]; ay += v * y[i]; by += b[i] * y[i]; });
+  const det = aa * bb - ab * ab;
+  return [(ay * bb - by * ab) / det, (by * aa - ay * ab) / det];
+}
+function inv3(M) {
+  const n = M.length, A = M.map((r, i) => r.concat(M.map((_, j) => i === j ? 1 : 0)));
+  for (let c = 0; c < n; c++) {
+    let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]];
+    const d = A[c][c]; if (Math.abs(d) < 1e-300) return null;
+    for (let j = 0; j < 2 * n; j++) A[c][j] /= d;
+    for (let r = 0; r < n; r++) if (r !== c) { const f = A[r][c]; for (let j = 0; j < 2 * n; j++) A[r][j] -= f * A[c][j]; }
+  }
+  return A.map(r => r.slice(n));
+}
+const MODELS = {
+  expc: { f: (p, x, x0) => p[0] * Math.exp(-(x - x0) / p[1]) + p[2], names: ["A", "τ", "C"] },
+  exp: { f: (p, x, x0) => p[0] * Math.exp(-(x - x0) / p[1]), names: ["A", "τ"] },
+  lin: { f: (p, x, x0) => p[0] + p[1] * (x - x0), names: ["I₀", "slope"] }
+};
+function fit(model, pts, x0) {
+  const xs = pts.map(p => p.n), ys = pts.map(p => p.I);
+  if (model === "none" || pts.length < (model === "expc" ? 4 : 3)) return null;
+  let p;
+  if (model === "lin") p = linLS([xs.map(() => 1), xs.map(x => x - x0)], ys);
+  else {
+    // separable: for a given τ the amplitude (and offset) are linear; search τ on a log grid, then golden-section
+    const sse = t => {
+      const e = xs.map(x => Math.exp(-(x - x0) / t));
+      const b = model === "expc" ? linLS([e, xs.map(() => 1)], ys) : linLS([e], ys);
+      let s = 0; ys.forEach((y, i) => { const r = y - (b[0] * e[i] + (model === "expc" ? b[1] : 0)); s += r * r; });
+      return { s: s, b: b };
+    };
+    const span = Math.max(1, xs[xs.length - 1] - xs[0]);
+    let best = null;
+    for (let k = 0; k <= 160; k++) { const t = span * Math.pow(10, -2 + 5 * k / 160); const r = sse(t); if (!best || r.s < best.s) best = { t: t, s: r.s }; }
+    let lo = Math.log(best.t) - 0.08, hi = Math.log(best.t) + 0.08;
+    const g = (Math.sqrt(5) - 1) / 2;
+    for (let it = 0; it < 80; it++) {
+      const a = hi - g * (hi - lo), b = lo + g * (hi - lo);
+      if (sse(Math.exp(a)).s < sse(Math.exp(b)).s) hi = b; else lo = a;
+    }
+    const t = Math.exp((lo + hi) / 2), r = sse(t);
+    p = model === "expc" ? [r.b[0], t, r.b[1]] : [r.b[0], t];
+  }
+  const M = MODELS[model], f = x => M.f(p, x, x0);
+  const res = ys.map((y, i) => y - f(xs[i]));
+  const dof = ys.length - p.length;
+  const s2 = res.reduce((a, r) => a + r * r, 0) / Math.max(1, dof);
+  // covariance from the numerical Jacobian, scaled by the residual variance
+  const J = xs.map(x => p.map((v, j) => { const h = Math.abs(v) * 1e-6 || 1e-6; const q = p.slice(); q[j] += h; return (M.f(q, x, x0) - f(x)) / h; }));
+  const JtJ = p.map((_, a) => p.map((_, b) => J.reduce((s, row) => s + row[a] * row[b], 0)));
+  const inv = inv3(JtJ);
+  const cov = inv ? inv.map(r => r.map(v => v * s2)) : null;
+  const yMean = ys.reduce((a, b) => a + b, 0) / ys.length;
+  const ssTot = ys.reduce((a, y) => a + (y - yMean) ** 2, 0);
+  return { model: model, p: p, cov: cov, f: f, x0: x0, rms: Math.sqrt(res.reduce((a, r) => a + r * r, 0) / ys.length), r2: 1 - res.reduce((a, r) => a + r * r, 0) / ssTot, n: ys.length, M: M };
+}
+const sd = (F, j) => F && F.cov ? Math.sqrt(Math.max(0, F.cov[j][j])) : NaN;
+
+/* ============ state ============ */
+let ROWS = [], SRCNAME = "", FIT = null;
+const opt = { model: "expc", ymode: "rel", line: false, plateau: true, resid: true };
+const fig = { width: 8.5, aspect: 0.75, font: "arial", fs: 8, eq: true };
+const FIG_FONTS = { arial: "Arial, Helvetica, sans-serif", helvetica: "Helvetica, Arial, sans-serif", times: "Times New Roman, Times, serif" };
+const PT_PER_CM = 72 / 2.54;
+let hover = null;
+
+function refValue() { return FIT ? FIT.f(ROWS[0].n) : ROWS[0].I; }
+function yv(I) { return opt.ymode === "rel" ? I / refValue() : I; }
+function compute() {
+  if (!ROWS.length) { FIT = null; return; }
+  FIT = fit(opt.model, ROWS.filter(r => !r.out), ROWS[0].n);
+}
+function derived() {
+  if (!FIT) return null;
+  const x0 = ROWS[0].n, xl = ROWS[ROWS.length - 1].n, I0 = FIT.f(x0);
+  const out = { I0: I0, last: FIT.f(xl) / I0 };
+  if (FIT.model === "expc" || FIT.model === "exp") {
+    out.tau = FIT.p[1]; out.tauE = sd(FIT, 1);
+    out.half = FIT.p[1] * Math.LN2;
+  }
+  if (FIT.model === "expc") {
+    // plateau as a fraction of the fitted start, with its sd propagated through A and C
+    const A = FIT.p[0], C = FIT.p[2], S = A + C;
+    out.plat = C / S;
+    if (FIT.cov) { const dA = -C / (S * S), dC = A / (S * S); out.platE = Math.sqrt(dA * dA * FIT.cov[0][0] + dC * dC * FIT.cov[2][2] + 2 * dA * dC * FIT.cov[0][2]); }
+  }
+  if (FIT.model === "lin") { out.slope = FIT.p[1] / I0; out.slopeE = sd(FIT, 1) / I0; }
+  return out;
+}
+
+/* ============ drawing (shared by screen and export) ============ */
+function draw(cfg, W, PH, PHr) {
+  const fs = cfg.fs, u = fs / 7, C = cfg.col, ff = ' font-family="' + cfg.font + '"', f2 = v => v.toFixed(2);
+  const showR = opt.resid && FIT;
+  const xs = ROWS.map(r => r.n);
+  const xlo = Math.min.apply(null, xs), xhi = Math.max.apply(null, xs), xpad = Math.max(0.5, (xhi - xlo) * 0.03);
+  const X0 = xlo - xpad, X1 = xhi + xpad;
+  let lo = Infinity, hi = -Infinity;
+  ROWS.forEach(r => { const y = yv(r.I); lo = Math.min(lo, y); hi = Math.max(hi, y); });
+  if (FIT && opt.plateau && FIT.model === "expc") { const pl = yv(FIT.p[2]); lo = Math.min(lo, pl); }
+  if (FIT) [X0, X1].forEach(x => { const y = yv(FIT.f(x)); lo = Math.min(lo, y); hi = Math.max(hi, y); });
+  const ypad = (hi - lo) * 0.08 || Math.abs(hi) * 0.05 || 1;
+  const Y0 = lo - ypad, Y1 = hi + ypad;
+  const ex = opt.ymode === "abs" ? sciScale(Math.max(Math.abs(Y0), Math.abs(Y1))) : 0, sc = Math.pow(10, ex);
+  const xt = niceTicks(X0, X1, 6, true).filter(t => t >= X0 && t <= X1), xstep = xt.length > 1 ? xt[1] - xt[0] : 1;
+  const yt = niceTicks(Y0 / sc, Y1 / sc, 5).filter(t => t >= Y0 / sc - 1e-12 && t <= Y1 / sc + 1e-12), ystep = yt.length > 1 ? yt[1] - yt[0] : 1;
+  const yLab = yt.map(t => fmtTick(t, tickDec(ystep), ystep));
+  // residuals in % of the fitted value
+  let rlo = 0, rhi = 0;
+  if (showR) ROWS.forEach(r => { const v = (r.I / FIT.f(r.n) - 1) * 100; rlo = Math.min(rlo, v); rhi = Math.max(rhi, v); });
+  const rpad = (rhi - rlo) * 0.15 || 1, R0 = rlo - rpad, R1 = rhi + rpad;
+  const rt = showR ? niceTicks(R0, R1, 3).filter(t => t >= R0 && t <= R1) : [], rstep = rt.length > 1 ? rt[1] - rt[0] : 1;
+  const rLab = rt.map(t => fmtTick(t, tickDec(rstep), rstep));
+  const labW = Math.max.apply(null, yLab.concat(rLab).map(t => textW(t, fs)));
+  const ML = fs * 1.35 + fs * 0.5 + labW + fs * 0.45, MR = fs * 0.9, MT = fs * 0.9, gap = fs * 0.8;
+  const PW = W - ML - MR;
+  const T1 = MT, B1 = T1 + PH, T2 = B1 + gap, B2 = T2 + (showR ? PHr : 0);
+  const H = (showR ? B2 : B1) + fs * 3.1;
+  const X = v => ML + (v - X0) / (X1 - X0) * PW;
+  const Y = v => B1 - (v / sc - Y0 / sc) / (Y1 / sc - Y0 / sc) * PH;
+  const YR = v => B2 - (v - R0) / (R1 - R0) * PHr;
+  let s = "";
+  const frame = (T, B, yticks, Yf, labs, showX) => {
+    let t = "";
+    const tk = 3 * u, tm = 1.7 * u;
+    xt.forEach(v => { t += "M" + f2(X(v)) + " " + f2(B) + "v" + f2(-tk) + "M" + f2(X(v)) + " " + f2(T) + "v" + f2(tk); });
+    minorTicks(xt, xstep, X0, X1, true).forEach(v => { t += "M" + f2(X(v)) + " " + f2(B) + "v" + f2(-tm) + "M" + f2(X(v)) + " " + f2(T) + "v" + f2(tm); });
+    yticks.forEach(v => { t += "M" + f2(ML) + " " + f2(Yf(v)) + "h" + f2(tk) + "M" + f2(ML + PW) + " " + f2(Yf(v)) + "h" + f2(-tk); });
+    let o = '<path d="' + t + '" fill="none" stroke="' + C.ink + '" stroke-width="' + (0.55 * u).toFixed(2) + '"/>';
+    o += '<rect x="' + f2(ML) + '" y="' + f2(T) + '" width="' + f2(PW) + '" height="' + f2(B - T) + '" fill="none" stroke="' + C.ink + '" stroke-width="' + (0.75 * u).toFixed(2) + '"/>';
+    yticks.forEach((v, k) => { o += '<text x="' + f2(ML - fs * 0.45) + '" y="' + f2(Yf(v) + fs * 0.35) + '" text-anchor="end"' + ff + ' font-size="' + fs + '" fill="' + C.ink + '">' + esc(labs[k]) + "</text>"; });
+    if (showX) {
+      xt.forEach(v => { o += '<text x="' + f2(X(v)) + '" y="' + f2(B + fs * 1.25) + '" text-anchor="middle"' + ff + ' font-size="' + fs + '" fill="' + C.ink + '">' + v + "</text>"; });
+      o += '<text x="' + f2(ML + PW / 2) + '" y="' + f2(B + fs * 2.75) + '" text-anchor="middle"' + ff + ' font-size="' + (fs * 1.05).toFixed(2) + '" fill="' + C.ink + '">Experiment no.</text>';
+    }
+    return o;
+  };
+  // main panel
+  if (FIT && opt.plateau && FIT.model === "expc") {
+    s += '<line x1="' + f2(ML) + '" y1="' + f2(Y(yv(FIT.p[2]))) + '" x2="' + f2(ML + PW) + '" y2="' + f2(Y(yv(FIT.p[2]))) + '" stroke="' + C.muted + '" stroke-width="' + (0.6 * u).toFixed(2) + '" stroke-dasharray="' + (3 * u).toFixed(2) + " " + (2 * u).toFixed(2) + '"/>';
+  }
+  if (opt.line) s += '<path d="' + ROWS.map((r, i) => (i ? "L" : "M") + f2(X(r.n)) + " " + f2(Y(yv(r.I)))).join("") + '" fill="none" stroke="' + C.data + '" stroke-opacity="0.5" stroke-width="' + (0.6 * u).toFixed(2) + '"/>';
+  if (FIT) {
+    let d = "";
+    for (let k = 0; k <= 200; k++) { const x = X0 + (X1 - X0) * k / 200; d += (k ? "L" : "M") + f2(X(x)) + " " + f2(Y(yv(FIT.f(x)))); }
+    s += '<path d="' + d + '" fill="none" stroke="' + C.fit + '" stroke-width="' + (1.0 * u).toFixed(2) + '"/>';
+  }
+  const r0 = 1.5 * u * (cfg.markR || 1);
+  ROWS.forEach((r, i) => {
+    const cx = X(r.n), cy = Y(yv(r.I));
+    if (cfg.hover && hover === i) s += '<circle cx="' + f2(cx) + '" cy="' + f2(cy) + '" r="' + f2(r0 * 2.3) + '" fill="none" stroke="' + C.data + '" stroke-opacity="0.6" stroke-width="' + (0.7 * u).toFixed(2) + '"/>';
+    s += '<circle cx="' + f2(cx) + '" cy="' + f2(cy) + '" r="' + f2(r0) + '" fill="' + (r.out ? C.surface : C.data) + '" stroke="' + (r.out ? C.data : C.surface) + '" stroke-width="' + ((r.out ? 0.7 : 0.4) * u).toFixed(2) + '"/>';
+    if (cfg.hover) s += '<circle class="pt" data-i="' + i + '" cx="' + f2(cx) + '" cy="' + f2(cy) + '" r="' + f2(Math.max(9, r0 * 3)) + '" fill="transparent" style="cursor:pointer"/>';
+  });
+  s += frame(T1, B1, yt, v => Y(v * sc), yLab, !showR);
+  const ytitle = opt.ymode === "rel" ? '<tspan font-style="italic">I</tspan> / <tspan font-style="italic">I</tspan><tspan dy="' + (fs * 0.3).toFixed(2) + '" font-size="' + (fs * 0.75).toFixed(2) + '">0</tspan>'
+    : '<tspan>Total intensity</tspan>' + (ex ? ' (10<tspan dy="' + (-fs * 0.35).toFixed(2) + '" font-size="' + (fs * 0.75).toFixed(2) + '">' + ex + '</tspan><tspan dy="' + (fs * 0.35).toFixed(2) + '"> counts)</tspan>' : " (counts)");
+  s += '<text transform="translate(' + f2(fs * 1.1) + " " + f2((T1 + B1) / 2) + ') rotate(-90)" text-anchor="middle"' + ff + ' font-size="' + (fs * 1.05).toFixed(2) + '" fill="' + C.ink + '">' + ytitle + "</text>";
+  // fit result inside the main panel, top right
+  if (FIT && cfg.eq) {
+    const D = derived(), lines = [];
+    if (D.tau != null) lines.push('<tspan font-style="italic">τ</tspan> = ' + fmt(D.tau, 1) + " ± " + fmt(FIT.p[1] ? sd(FIT, 1) : NaN, 1) + " exp.");
+    if (D.plat != null) lines.push("plateau " + fmt(D.plat * 100, 1) + " ± " + fmt(D.platE * 100, 1) + " %");
+    if (D.slope != null) lines.push("slope " + fmt(D.slope * 100, 3) + " ± " + fmt(D.slopeE * 100, 3) + " % / exp.");
+    lines.forEach((l, k) => { s += '<text x="' + f2(ML + PW - fs * 0.6) + '" y="' + f2(T1 + fs * (1.5 + 1.25 * k)) + '" text-anchor="end"' + ff + ' font-size="' + fs + '" fill="' + C.ink + '">' + l + "</text>"; });
+  }
+  // residual panel
+  if (showR) {
+    s += '<line x1="' + f2(ML) + '" y1="' + f2(YR(0)) + '" x2="' + f2(ML + PW) + '" y2="' + f2(YR(0)) + '" stroke="' + C.fit + '" stroke-width="' + (0.7 * u).toFixed(2) + '"/>';
+    ROWS.forEach(r => {
+      const v = (r.I / FIT.f(r.n) - 1) * 100;
+      s += '<circle cx="' + f2(X(r.n)) + '" cy="' + f2(YR(v)) + '" r="' + f2(r0 * 0.85) + '" fill="' + (r.out ? C.surface : C.data) + '" stroke="' + (r.out ? C.data : "none") + '" stroke-width="' + (0.6 * u).toFixed(2) + '"/>';
+    });
+    s += frame(T2, B2, rt, YR, rLab, true);
+    s += '<text transform="translate(' + f2(fs * 1.1) + " " + f2((T2 + B2) / 2) + ') rotate(-90)" text-anchor="middle"' + ff + ' font-size="' + (fs * 1.05).toFixed(2) + '" fill="' + C.ink + '">Resid. (%)</text>';
+  }
+  return { body: s, H: H, X0: X0, X1: X1, ML: ML, PW: PW };
+}
+
+/* ============ renders ============ */
+const SCREEN = { fs: 13, markR: 1.25, font: "Helvetica Neue, Arial, Helvetica, sans-serif", hover: true, eq: false,
+  col: { ink: "var(--ink)", muted: "var(--muted)", surface: "var(--surface)", data: "var(--s1)", fit: "var(--s2)" } };
+function renderMain() {
+  if (!ROWS.length) { $("maincard").innerHTML = '<p class="empty-note">No data loaded.</p>'; return; }
+  const W = 1000, D = draw(SCREEN, W, 400, 140);
+  $("maincard").innerHTML = '<div class="card-head"><h3>' + (opt.ymode === "rel" ? "Relative intensity" : "Total intensity") + "</h3></div>" +
+    '<p class="sub"><span style="color:var(--s1)">●</span> measured' + (FIT ? ' <span class="dim">·</span> <span style="color:var(--s2)">━</span> ' + esc($("model").selectedOptions[0].text.toLowerCase()) : "") +
+    (FIT && opt.plateau && FIT.model === "expc" ? ' <span class="dim">·</span> <span class="dim">- - plateau</span>' : "") + "</p>" +
+    '<svg viewBox="0 0 ' + W + " " + D.H.toFixed(1) + '" role="img" aria-label="Total intensity against experiment number">' + D.body + "</svg>";
+  const svg = $("maincard").querySelector("svg");
+  svg.addEventListener("pointerover", e => { const c = e.target.closest(".pt"); if (c) { setHover(+c.dataset.i); showTip(+c.dataset.i, e); } });
+  svg.addEventListener("pointermove", e => { const c = e.target.closest(".pt"); if (c) showTip(+c.dataset.i, e); });
+  svg.addEventListener("pointerout", e => { if (e.target.closest(".pt")) { $("tip").style.opacity = "0"; setHover(null); } });
+  svg.addEventListener("click", e => { const c = e.target.closest(".pt"); if (!c) return; const r = ROWS[+c.dataset.i]; r.out = !r.out; render(); });
+}
+let raf = 0;
+function setHover(i) { if (hover === i) return; hover = i; cancelAnimationFrame(raf); raf = requestAnimationFrame(renderMain); }
+function showTip(i, ev) {
+  const r = ROWS[i], tip = $("tip");
+  let h = '<span class="tn">' + esc(r.name) + "</span>";
+  h += '<span class="lb">total</span> ' + r.I.toLocaleString("en-US") + '<br><span class="lb">I/I₀</span> ' + fmt(r.I / refValue(), 4);
+  if (FIT) h += ' <span class="lb">fit</span> ' + fmt(FIT.f(r.n) / refValue(), 4) + ' <span class="lb">resid</span> ' + fmt((r.I / FIT.f(r.n) - 1) * 100, 2) + " %";
+  h += "<br>" + (r.out ? '<span class="lb">left out of the fit · click to include</span>' : '<span class="lb">click to leave out of the fit</span>');
+  tip.innerHTML = h; tip.style.opacity = "1";
+  const b = tip.getBoundingClientRect();
+  let x = ev.clientX + 16, y = ev.clientY + 16;
+  if (x + b.width > innerWidth - 10) x = ev.clientX - b.width - 16;
+  if (y + b.height > innerHeight - 10) y = ev.clientY - b.height - 16;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+function renderStrip() {
+  if (!ROWS.length) { $("strip").innerHTML = ""; return; }
+  const D = derived(), first = ROWS[0], last = ROWS[ROWS.length - 1];
+  const tiles = [];
+  const tile = (k, v, s, flat) => tiles.push('<div class="stat"><div class="k">' + esc(k) + '</div><div class="v' + (flat ? " flat" : "") + '">' + v + '</div><div class="s">' + esc(s) + "</div></div>");
+  tile("Datasets", String(ROWS.length), ROWS.filter(r => r.out).length ? ROWS.filter(r => r.out).length + " left out of the fit" : "all in the fit");
+  tile("Measured drop", fmt((last.I / first.I - 1) * 100, 1) + " %", "first " + first.name + " → last " + last.name);
+  if (D && D.tau != null) tile("Decay constant τ", fmt(D.tau, 1) + " ± " + fmt(D.tauE, 1), "experiments · halfway after " + fmt(D.half, 1));
+  else if (D && D.slope != null) tile("Slope", fmt(D.slope * 100, 3) + " %", "per experiment, of the fitted start · ± " + fmt(D.slopeE * 100, 3));
+  else tile("Decay constant τ", "—", "no exponential fit", true);
+  if (D && D.plat != null) tile("Plateau", fmt(D.plat * 100, 1) + " %", "of the fitted start · ± " + fmt(D.platE * 100, 1) + " %");
+  else tile("Plateau", "—", opt.model === "exp" ? "this model decays to zero" : "only with exponential + offset", true);
+  tile("Fitted at the last", D ? fmt(D.last * 100, 1) + " %" : "—", D ? "correction factor " + fmt(1 / D.last, 4) : "no fit", !D);
+  tile("Residual scatter", FIT ? fmt(FIT.rms / (FIT.f(first.n)) * 100, 2) + " %" : "—", FIT ? "rms of the fit · R² " + fmt(FIT.r2, 4) : "no fit", !FIT);
+  $("strip").innerHTML = tiles.join("");
+  $("fittag").textContent = FIT ? FIT.n + " points in the fit" : "no fit";
+  const eq = { expc: "I(n) = A·exp(−(n − n₁)/τ) + C", exp: "I(n) = A·exp(−(n − n₁)/τ)", lin: "I(n) = I₀ + b·(n − n₁)", none: "" }[opt.model];
+  $("fitnote").textContent = (eq ? "Model " + eq + ", with n₁ the first experiment. " : "") +
+    (opt.ymode === "rel" ? "I₀ is the " + (FIT ? "fitted" : "measured") + " intensity of the first experiment. " : "") +
+    (FIT && opt.resid ? "The lower panel is the measured value minus the fit, in % of the fit." : "");
+}
+function renderTable() {
+  $("tbl").querySelector("thead").innerHTML = "<tr><th class=\"l\">Dataset</th><th>n</th><th>Total intensity</th><th>I / I₀</th><th>Fit / I₀</th><th>Residual</th><th>Correction factor</th><th class=\"l\">In fit</th></tr>";
+  const I0 = refValue();
+  $("tbl").querySelector("tbody").innerHTML = ROWS.map(r => '<tr class="' + (r.out ? "off" : "") + '"><td class="l">' + esc(r.name) + "</td><td>" + r.n + "</td><td>" + r.I.toLocaleString("en-US") + "</td><td>" + fmt(r.I / I0, 4) +
+    "</td><td>" + (FIT ? fmt(FIT.f(r.n) / I0, 4) : "—") + "</td><td>" + (FIT ? fmt((r.I / FIT.f(r.n) - 1) * 100, 2) + " %" : "—") + "</td><td>" + (FIT ? fmt(FIT.f(ROWS[0].n) / FIT.f(r.n), 4) : fmt(ROWS[0].I / r.I, 4)) +
+    '</td><td class="l">' + (r.out ? "no" : "yes") + "</td></tr>").join("");
+}
+function buildFigure() {
+  if (!ROWS.length) return null;
+  const Wpt = fig.width * PT_PER_CM;
+  const cfg = { fs: fig.fs, font: FIG_FONTS[fig.font], hover: false, eq: fig.eq, col: { ink: "#000", muted: "#7a7a7a", surface: "#fff", data: "#2a78d6", fit: "#eb6834" } };
+  const PW0 = Wpt - fig.fs * 6;
+  const D = draw(cfg, Wpt, PW0 * fig.aspect, PW0 * fig.aspect * 0.32);
+  return { svg: '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' + fig.width + 'cm" height="' + (D.H / PT_PER_CM).toFixed(3) + 'cm" viewBox="0 0 ' + Wpt.toFixed(2) + " " + D.H.toFixed(2) + '">' + D.body + "</svg>", wPt: Wpt, hPt: D.H };
+}
+function renderFigure() {
+  const f = buildFigure();
+  if (!f) { $("figpreview").innerHTML = '<p class="figempty">No data.</p>'; $("figmeta").textContent = ""; return; }
+  $("figpreview").innerHTML = f.svg.replace("<svg ", '<svg style="width:' + (fig.width / 2.54 * 96 * 1.6).toFixed(0) + 'px;max-width:100%;height:auto" ');
+  $("figmeta").textContent = fig.width + " × " + (f.hPt / PT_PER_CM).toFixed(2) + " cm · PNG at 600 dpi = " + Math.round(f.wPt * 600 / 72) + " × " + Math.round(f.hPt * 600 / 72) + " px";
+}
+function renderSource() {
+  $("srcname").textContent = SRCNAME || "No file";
+  $("srcmeta").textContent = ROWS.length ? ROWS.length + " datasets · " + ROWS[0].name + " to " + ROWS[ROWS.length - 1].name : "";
+  $("foot").textContent = SRCNAME ? "Source: " + SRCNAME + " · uncertainties are 1σ from the fit covariance scaled by the residual variance." : "";
+}
+function render() { compute(); renderSource(); renderStrip(); renderMain(); renderTable(); renderFigure(); }
+
+/* ============ export ============ */
+function saveBlob(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+function withDpi(buf, dpi) {
+  const src = new Uint8Array(buf), ppm = Math.round(dpi / 0.0254), ch = new Uint8Array(21), dv = new DataView(ch.buffer);
+  dv.setUint32(0, 9); ch.set([0x70, 0x48, 0x59, 0x73], 4); dv.setUint32(8, ppm); dv.setUint32(12, ppm); ch[16] = 1; dv.setUint32(17, crc32(ch.subarray(4, 17)));
+  const out = new Uint8Array(src.length + 21); out.set(src.subarray(0, 33), 0); out.set(ch, 33); out.set(src.subarray(33), 54); return out;
+}
+$("fig-svg").addEventListener("click", () => { const f = buildFigure(); if (f) saveBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + f.svg], { type: "image/svg+xml" }), "intensity_decay.svg"); });
+$("fig-png").addEventListener("click", () => {
+  const f = buildFigure(); if (!f) return;
+  const sc = 600 / 72, W = Math.round(f.wPt * sc), H = Math.round(f.hPt * sc), img = new Image();
+  img.onload = () => { const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, W, H); g.drawImage(img, 0, 0, W, H);
+    cv.toBlob(b => b.arrayBuffer().then(buf => saveBlob(new Blob([withDpi(buf, 600)], { type: "image/png" }), "intensity_decay_600dpi.png")), "image/png"); };
+  img.onerror = () => { $("figmeta").textContent = "PNG rendering failed in this browser — use the SVG."; };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(f.svg);
+});
+$("csv").addEventListener("click", () => {
+  const I0 = refValue(), out = ["dataset,n,total_intensity,I_over_I0,fit_over_I0,residual_percent,correction_factor,in_fit"];
+  ROWS.forEach(r => out.push([JSON.stringify(r.name), r.n, r.I, (r.I / I0).toFixed(6), FIT ? (FIT.f(r.n) / I0).toFixed(6) : "", FIT ? ((r.I / FIT.f(r.n) - 1) * 100).toFixed(4) : "",
+    (FIT ? FIT.f(ROWS[0].n) / FIT.f(r.n) : ROWS[0].I / r.I).toFixed(6), r.out ? 0 : 1].join(",")));
+  if (FIT) { out.push(""); out.push("# model," + opt.model); FIT.M.names.forEach((nm, j) => out.push("# " + nm + "," + FIT.p[j] + "," + sd(FIT, j))); }
+  saveBlob(new Blob(["﻿" + out.join("\r\n")], { type: "text/csv" }), "intensity_decay_correction.csv");
+});
+
+/* ============ events ============ */
+$("model").addEventListener("change", e => { opt.model = e.target.value; render(); });
+$("ymode").addEventListener("change", e => { opt.ymode = e.target.value; render(); });
+[["t-line", "line"], ["t-plateau", "plateau"], ["t-resid", "resid"]].forEach(p => $(p[0]).addEventListener("change", e => { opt[p[1]] = e.target.checked; render(); }));
+$("incl-all").addEventListener("click", () => { ROWS.forEach(r => { r.out = false; }); render(); });
+[["fig-width", "width", Number], ["fig-aspect", "aspect", Number], ["fig-font", "font", String], ["fig-fs", "fs", Number]].forEach(c => $(c[0]).addEventListener("change", e => { fig[c[1]] = c[2](e.target.value); renderFigure(); }));
+$("fig-eq").addEventListener("change", e => { fig.eq = e.target.checked; renderFigure(); });
+function showErr(m) { const e = $("err"); e.hidden = !m; e.textContent = m || ""; }
+function loadText(text, name) {
+  try { ROWS = parseSums(text); SRCNAME = name; showErr(""); render(); }
+  catch (e) { showErr(name + ": " + e.message); }
+}
+function readFile(f) { const fr = new FileReader(); fr.onload = () => loadText(String(fr.result), f.name); fr.onerror = () => showErr("Could not read " + f.name); fr.readAsText(f); }
+$("pick").addEventListener("click", () => $("file").click());
+$("file").addEventListener("change", e => { if (e.target.files[0]) readFile(e.target.files[0]); e.target.value = ""; });
+$("reset").addEventListener("click", () => loadText(SAMPLE, "intensity_sums.txt"));
+const src = $("source");
+["dragenter", "dragover"].forEach(t => document.addEventListener(t, e => { e.preventDefault(); src.classList.add("drag"); }));
+["dragleave", "drop"].forEach(t => document.addEventListener(t, e => { e.preventDefault(); if (t === "dragleave" && e.relatedTarget) return; src.classList.remove("drag"); }));
+document.addEventListener("drop", e => {
+  const dt = e.dataTransfer; if (!dt) return;
+  const it = dt.items ? Array.from(dt.items).find(x => x.kind === "file") : null;
+  const f = it ? it.getAsFile() : (dt.files && dt.files[0]);
+  if (f) readFile(f); else showErr("Nothing to load — drop a text file with dataset names and intensities.");
+});
+loadText(SAMPLE, "intensity_sums.txt");
+})();
+</script>
+</body>
+</html>
